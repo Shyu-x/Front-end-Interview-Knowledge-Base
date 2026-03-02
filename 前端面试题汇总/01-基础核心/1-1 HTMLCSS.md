@@ -7460,3 +7460,2885 @@ ctx.globalCompositeOperation = 'source-over'; // 混合模式
 ---
 
 > 资料整理自 2024 字节跳动、阿里巴巴、拼多多面试
+
+---
+
+## 六、CSS 布局实战与高级应用
+
+### 6.1 双栏布局（左侧固定，右侧自适应）
+
+**参考答案：**
+
+双栏布局是网页中最常见的布局方式之一，左侧固定宽度，右侧自适应填充剩余空间。
+
+**方法一：浮动 + BFC**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双栏布局 - 浮动+BFC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        /* 父容器 */
+        .layout-float {
+            overflow: hidden;  /* 触发BFC，清除浮动 */
+        }
+
+        /* 左侧固定 */
+        .sidebar {
+            float: left;
+            width: 200px;
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* 右侧自适应 */
+        .main {
+            overflow: hidden;  /* 触发BFC，不与浮动元素重叠 */
+            background: #fff;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sidebar {
+                float: none;
+                width: 100%;
+            }
+
+            .main {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>双栏布局 - 浮动 + BFC</h1>
+    <div class="layout-float">
+        <aside class="sidebar">
+            <h3>侧边栏</h3>
+            <p>固定宽度 200px</p>
+        </aside>
+        <main class="main">
+            <h3>主内容区</h3>
+            <p>自适应宽度</p>
+            <p>使用 overflow: hidden 触发BFC</p>
+        </main>
+    </div>
+</body>
+</html>
+```
+
+**方法二：Flexbox 布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双栏布局 - Flexbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .layout-flex {
+            display: flex;
+            min-height: 400px;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;  /* 不允许收缩 */
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+        }
+
+        .main {
+            flex: 1;  /* 自动填充剩余空间 */
+            background: #fff;
+            padding: 20px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .layout-flex {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>双栏布局 - Flexbox</h1>
+    <div class="layout-flex">
+        <aside class="sidebar">
+            <h3>侧边栏</h3>
+            <p>固定宽度 200px</p>
+        </aside>
+        <main class="main">
+            <h3>主内容区</h3>
+            <p>自适应宽度</p>
+            <p>使用 flex: 1 自动填充</p>
+        </main>
+    </div>
+</body>
+</html>
+```
+
+**方法三：Grid 布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双栏布局 - Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 400px;
+        }
+
+        .sidebar {
+            background: #2ecc71;
+            color: white;
+            padding: 20px;
+        }
+
+        .main {
+            background: #fff;
+            padding: 20px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>双栏布局 - Grid</h1>
+    <div class="layout-grid">
+        <aside class="sidebar">
+            <h3>侧边栏</h3>
+            <p>固定宽度 200px</p>
+        </aside>
+        <main class="main">
+            <h3>主内容区</h3>
+            <p>自适应宽度</p>
+            <p>使用 grid-template-columns: 200px 1fr</p>
+        </main>
+    </div>
+</body>
+</html>
+```
+
+**方法四：绝对定位**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双栏布局 - 绝对定位</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .layout-absolute {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 200px;
+            background: #9b59b6;
+            color: white;
+            padding: 20px;
+        }
+
+        .main {
+            margin-left: 200px;
+            background: #fff;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>双栏布局 - 绝对定位</h1>
+    <div class="layout-absolute">
+        <aside class="sidebar">
+            <h3>侧边栏</h3>
+            <p>固定宽度 200px</p>
+        </aside>
+        <main class="main">
+            <h3>主内容区</h3>
+            <p>自适应宽度</p>
+            <p>使用 margin-left: 200px</p>
+        </main>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### 6.2 三栏布局（两端固定，中间自适应）
+
+**参考答案：**
+
+三栏布局是经典的网页布局，两侧固定宽度，中间自适应。
+
+**方法一：圣杯布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三栏布局 - 圣杯布局</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .grail-layout {
+            padding: 0 200px;  /* 左右栏预留空间 */
+            min-height: 400px;
+        }
+
+        .grail-layout::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .center {
+            float: left;
+            width: 100%;
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .left {
+            float: left;
+            width: 200px;
+            margin-left: -100%;
+            position: relative;
+            left: -200px;
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .right {
+            float: left;
+            width: 200px;
+            margin-left: -200px;
+            position: relative;
+            right: -200px;
+            background: #2ecc71;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .grail-layout {
+                padding: 0;
+            }
+
+            .center {
+                float: none;
+                width: 100%;
+            }
+
+            .left, .right {
+                float: none;
+                width: 100%;
+                margin: 0;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>三栏布局 - 圣杯布局</h1>
+    <div class="grail-layout">
+        <div class="center">
+            <h3>中间区域</h3>
+            <p>自适应宽度，优先渲染</p>
+        </div>
+        <div class="left">
+            <h3>左侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+        <div class="right">
+            <h3>右侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法二：双飞翼布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三栏布局 - 双飞翼布局</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .wing-layout {
+            min-height: 400px;
+        }
+
+        .wing-layout::after {
+            content: '';
+            display: block;
+            clear: both;
+        }
+
+        .center-wrapper {
+            float: left;
+            width: 100%;
+        }
+
+        .center {
+            margin: 0 200px;
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .left {
+            float: left;
+            width: 200px;
+            margin-left: -100%;
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .right {
+            float: left;
+            width: 200px;
+            margin-left: -200px;
+            background: #2ecc71;
+            color: white;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .center-wrapper {
+                float: none;
+                width: 100%;
+            }
+
+            .center {
+                margin: 0;
+            }
+
+            .left, .right {
+                float: none;
+                width: 100%;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>三栏布局 - 双飞翼布局</h1>
+    <div class="wing-layout">
+        <div class="center-wrapper">
+            <div class="center">
+                <h3>中间区域</h3>
+                <p>自适应宽度，优先渲染</p>
+                <p>通过 margin: 0 200px 预留两侧空间</p>
+            </div>
+        </div>
+        <div class="left">
+            <h3>左侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+        <div class="right">
+            <h3>右侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法三：Flexbox 实现**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三栏布局 - Flexbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .flex-layout {
+            display: flex;
+            min-height: 400px;
+        }
+
+        .left {
+            width: 200px;
+            flex-shrink: 0;
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+        }
+
+        .center {
+            flex: 1;
+            background: #3498db;
+            color: white;
+            padding: 20px;
+        }
+
+        .right {
+            width: 200px;
+            flex-shrink: 0;
+            background: #2ecc71;
+            color: white;
+            padding: 20px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .flex-layout {
+                flex-direction: column;
+            }
+
+            .left, .center, .right {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>三栏布局 - Flexbox</h1>
+    <div class="flex-layout">
+        <div class="left">
+            <h3>左侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+        <div class="center">
+            <h3>中间区域</h3>
+            <p>自适应宽度</p>
+        </div>
+        <div class="right">
+            <h3>右侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法四：Grid 实现**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三栏布局 - Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            min-height: 400px;
+        }
+
+        .left {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+        }
+
+        .center {
+            background: #3498db;
+            color: white;
+            padding: 20px;
+        }
+
+        .right {
+            background: #2ecc71;
+            color: white;
+            padding: 20px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>三栏布局 - Grid</h1>
+    <div class="grid-layout">
+        <div class="left">
+            <h3>左侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+        <div class="center">
+            <h3>中间区域</h3>
+            <p>自适应宽度</p>
+        </div>
+        <div class="right">
+            <h3>右侧栏</h3>
+            <p>固定宽度 200px</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### 6.3 瀑布流布局
+
+**参考答案：**
+
+瀑布流布局是一种常见的图片展示布局，各列宽度相同，但高度不同，元素像瀑布一样自然排列。
+
+**方法一：CSS Column 实现**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瀑布流布局 - CSS Column</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* CSS Column 瀑布流 */
+        .waterfall-column {
+            column-count: 4;
+            column-gap: 15px;
+        }
+
+        .waterfall-column .item {
+            break-inside: avoid;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .waterfall-column .item:hover {
+            transform: translateY(-5px);
+        }
+
+        .waterfall-column .item img {
+            width: 100%;
+            display: block;
+        }
+
+        .waterfall-column .item .content {
+            padding: 15px;
+        }
+
+        .waterfall-column .item .content h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .waterfall-column .item .content p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 不同高度的占位 */
+        .item:nth-child(1) .content { height: 80px; }
+        .item:nth-child(2) .content { height: 120px; }
+        .item:nth-child(3) .content { height: 100px; }
+        .item:nth-child(4) .content { height: 90px; }
+        .item:nth-child(5) .content { height: 150px; }
+        .item:nth-child(6) .content { height: 70px; }
+        .item:nth-child(7) .content { height: 110px; }
+        .item:nth-child(8) .content { height: 130px; }
+
+        @media (max-width: 1200px) {
+            .waterfall-column {
+                column-count: 3;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .waterfall-column {
+                column-count: 2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .waterfall-column {
+                column-count: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>瀑布流布局 - CSS Column</h1>
+    <div class="waterfall-column">
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%233498db' width='300' height='200'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 1%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题1</h3>
+                <p>这是第一张图片的描述内容</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='250'%3E%3Crect fill='%23e74c3c' width='300' height='250'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 2%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题2</h3>
+                <p>这是一张比较高的图片</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='180'%3E%3Crect fill='%232ecc71' width='300' height='180'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 3%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题3</h3>
+                <p>这是第三张图片</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='220'%3E%3Crect fill='%239b59b6' width='300' height='220'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 4%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题4</h3>
+                <p>第四张图片的描述</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect fill='%23f39c12' width='300' height='300'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 5%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题5</h3>
+                <p>这是一张正方形的图片</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='160'%3E%3Crect fill='%231abc9c' width='300' height='160'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 6%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题6</h3>
+                <p>第六张图片</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='240'%3E%3Crect fill='%2334495e' width='300' height='240'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 7%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题7</h3>
+                <p>第七张图片描述</p>
+            </div>
+        </div>
+        <div class="item">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='280'%3E%3Crect fill='%23e67e22' width='300' height='280'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage 8%3C/text%3E%3C/svg%3E" alt="">
+            <div class="content">
+                <h3>标题8</h3>
+                <p>第八张图片内容</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法二：Flexbox + JavaScript 实现**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瀑布流布局 - Flexbox + JS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .waterfall-flex {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -10px;
+        }
+
+        .waterfall-flex .column {
+            padding: 10px;
+            flex: 0 0 25%;
+        }
+
+        .waterfall-flex .item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .waterfall-flex .item img {
+            width: 100%;
+            display: block;
+        }
+
+        .waterfall-flex .item .content {
+            padding: 15px;
+        }
+
+        @media (max-width: 1200px) {
+            .waterfall-flex .column {
+                flex: 0 0 33.33%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .waterfall-flex .column {
+                flex: 0 0 50%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .waterfall-flex .column {
+                flex: 0 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>瀑布流布局 - Flexbox + JS</h1>
+    <div class="waterfall-flex" id="waterfall">
+    </div>
+
+    <script>
+        const data = [
+            { height: 200, color: '#3498db' },
+            { height: 250, color: '#e74c3c' },
+            { height: 180, color: '#2ecc71' },
+            { height: 220, color: '#9b59b6' },
+            { height: 300, color: '#f39c12' },
+            { height: 160, color: '#1abc9c' },
+            { height: 240, color: '#34495e' },
+            { height: 280, color: '#e67e22' }
+        ];
+
+        const waterfall = document.getElementById('waterfall');
+        const columnCount = window.innerWidth > 1200 ? 4 : window.innerWidth > 768 ? 3 : window.innerWidth > 480 ? 2 : 1;
+
+        // 创建列
+        for (let i = 0; i < columnCount; i++) {
+            const column = document.createElement('div');
+            column.className = 'column';
+            waterfall.appendChild(column);
+        }
+
+        const columns = document.querySelectorAll('.column');
+
+        // 分配项目到最短列
+        data.forEach((item, index) => {
+            const shortestColumn = Array.from(columns).reduce((prev, curr) => {
+                return prev.offsetHeight <= curr.offsetHeight ? prev : curr;
+            });
+
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = `
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='${item.height}'%3E%3Crect fill='${encodeURIComponent(item.color)}' width='300' height='${item.height}'/%3E%3Ctext fill='white' font-size='20' x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle'%3EImage ${index + 1}%3C/text%3E%3C/svg%3E" alt="">
+                <div class="content">
+                    <h3>标题${index + 1}</h3>
+                    <p>图片高度: ${item.height}px</p>
+                </div>
+            `;
+            shortestColumn.appendChild(div);
+        });
+    </script>
+</body>
+</html>
+```
+
+---
+
+### 6.4 吸顶导航
+
+**参考答案：**
+
+吸顶导航是现代网页常见的交互效果，导航栏在页面滚动到顶部时固定在视口上方。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吸顶导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* 占位元素 */
+        .placeholder {
+            height: 60px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 滚动后的样式 */
+        .navbar.scrolled {
+            background: rgba(102, 126, 234, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+
+        .navbar .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 内容区域 */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.8;
+        }
+
+        .content h2 {
+            margin: 30px 0 15px;
+            color: #333;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        /* 模拟长内容 */
+        .long-content {
+            height: 2000px;
+            background: linear-gradient(to bottom, #f5f5f5, #e0e0e0);
+        }
+
+        /* 返回顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .back-to-top.show {
+            display: flex;
+        }
+
+        .back-to-top:hover {
+            background: #764ba2;
+            transform: translateY(-3px);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .navbar .nav-links {
+                gap: 15px;
+            }
+
+            .navbar .nav-links a {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="logo">MyWebsite</div>
+        <ul class="nav-links">
+            <li><a href="#home">首页</a></li>
+            <li><a href="#about">关于</a></li>
+            <li><a href="#services">服务</a></li>
+            <li><a href="#products">产品</a></li>
+            <li><a href="#contact">联系</a></li>
+        </ul>
+    </nav>
+
+    <!-- 占位 -->
+    <div class="placeholder"></div>
+
+    <!-- 内容 -->
+    <div class="content">
+        <h1>吸顶导航示例</h1>
+        <p>向下滚动页面查看导航栏的吸顶效果...</p>
+
+        <h2>特性说明</h2>
+        <p>1. 使用 position: fixed 实现固定定位</p>
+        <p>2. 监听 scroll 事件添加/移除样式</p>
+        <p>3. 使用 backdrop-filter 实现毛玻璃效果</p>
+        <p>4. 添加过渡动画使效果更平滑</p>
+        <p>5. 返回顶部按钮增强用户体验</p>
+
+        <h2>实现原理</h2>
+        <p>通过 JavaScript 监听 window.onscroll 事件，当滚动距离超过一定阈值时，给导航栏添加 scrolled 类，然后通过 CSS 控制样式的变化。这种方式既实现了功能，又保持了良好的性能。</p>
+
+        <h2>性能优化</h2>
+        <p>1. 使用节流（throttle）控制事件触发频率</p>
+        <p>2. 使用 CSS transform 和 opacity 进行动画</p>
+        <p>3. 避免在滚动事件中执行复杂计算</p>
+
+        <h2>无障碍考虑</h2>
+        <p>1. 保持键盘导航能力</p>
+        <p>2. 适当的焦点管理</p>
+        <p>3. 屏幕阅读器兼容性</p>
+    </div>
+
+    <!-- 模拟长内容 -->
+    <div class="long-content"></div>
+
+    <!-- 返回顶部按钮 -->
+    <button class="back-to-top" id="backToTop" title="返回顶部">&#8593;</button>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const backToTop = document.getElementById('backToTop');
+
+        // 监听滚动事件
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+                backToTop.classList.add('show');
+            } else {
+                navbar.classList.remove('scrolled');
+                backToTop.classList.remove('show');
+            }
+        });
+
+        // 返回顶部
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 节流函数
+        function throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+
+        // 使用节流优化滚动事件
+        window.addEventListener('scroll', throttle(() => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+                backToTop.classList.add('show');
+            } else {
+                navbar.classList.remove('scrolled');
+                backToTop.classList.remove('show');
+            }
+        }, 100));
+    </script>
+</body>
+</html>
+```
+
+---
+
+### 6.5 底部固定
+
+**参考答案：**
+
+当页面内容不足一屏时，使页脚固定在底部；当内容超过一屏时，页脚自然跟随在内容下方。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>底部固定布局</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* 方法一：Flexbox 实现（推荐） */
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .main {
+            flex: 1;  /* 自动填充剩余空间 */
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* 内容卡片 */
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 内容不足一屏时底部固定 */
+        .footer-fixed {
+            background: #e74c3c;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        /* 切换按钮 */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #3498db;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #2980b9;
+        }
+
+        /* 短内容 */
+        .short-content {
+            display: none;
+        }
+
+        .long-content {
+            display: block;
+        }
+
+        .content-card {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="showShort()">短内容</button>
+        <button onclick="showLong()">长内容</button>
+    </div>
+
+    <header class="header">
+        <h1>网站标题</h1>
+    </header>
+
+    <main class="main">
+        <div id="contentArea" class="long-content">
+            <div class="content-card">
+                <h2>欢迎访问</h2>
+                <p>这是一个使用 Flexbox 实现的底部固定布局示例。</p>
+                <p>点击右侧按钮切换内容长度，查看底部固定效果。</p>
+            </div>
+            <div class="content-card">
+                <h2>功能特点</h2>
+                <p>1. 内容不足一屏时，底部固定在视口底部</p>
+                <p>2. 内容超过一屏时，底部自然跟随内容</p>
+                <p>3. 响应式设计，适配各种屏幕尺寸</p>
+            </div>
+            <div class="content-card">
+                <h2>实现原理</h2>
+                <p>使用 Flexbox 布局，将 body 设置为 display: flex; flex-direction: column; min-height: 100vh;</p>
+                <p>主内容区域设置 flex: 1，使其自动填充剩余空间</p>
+                <p>底部设置 margin-top: auto，在内容不足时自动推到页面底部</p>
+            </div>
+            <div class="content-card">
+                <h2>其他实现方法</h2>
+                <p>1. 使用 position: absolute + min-height</p>
+                <p>2. 使用 CSS Grid 布局</p>
+                <p>3. 使用 JavaScript 动态计算</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 公司名称. 保留所有权利。</p>
+        <p>地址：某某市某某区某某街道 | 电话：400-888-8888</p>
+    </footer>
+
+    <script>
+        function showShort() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="content-card">
+                    <h2>短内容</h2>
+                    <p>内容较少，不足一屏</p>
+                    <p>底部应该固定在页面底部</p>
+                </div>
+            `;
+        }
+
+        function showLong() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="content-card">
+                    <h2>欢迎访问</h2>
+                    <p>这是一个使用 Flexbox 实现的底部固定布局示例。</p>
+                    <p>点击右侧按钮切换内容长度，查看底部固定效果。</p>
+                </div>
+                <div class="content-card">
+                    <h2>功能特点</h2>
+                    <p>1. 内容不足一屏时，底部固定在视口底部</p>
+                    <p>2. 内容超过一屏时，底部自然跟随内容</p>
+                    <p>3. 响应式设计，适配各种屏幕尺寸</p>
+                </div>
+                <div class="content-card">
+                    <h2>实现原理</h2>
+                    <p>使用 Flexbox 布局，将 body 设置为 display: flex; flex-direction: column; min-height: 100vh;</p>
+                    <p>主内容区域设置 flex: 1，使其自动填充剩余空间</p>
+                    <p>底部设置 margin-top: auto，在内容不足时自动推到页面底部</p>
+                </div>
+                <div class="content-card">
+                    <h2>其他实现方法</h2>
+                    <p>1. 使用 position: absolute + min-height</p>
+                    <p>2. 使用 CSS Grid 布局</p>
+                    <p>3. 使用 JavaScript 动态计算</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+```
+
+---
+
+### 6.6 等高布局
+
+**参考答案：**
+
+等高布局要求多列内容具有相同的高度，无论哪一列内容更多。
+
+**方法一：Flexbox 等高布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等高布局 - Flexbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Flexbox 等高布局 */
+        .flex-equal-height {
+            display: flex;
+            gap: 20px;
+        }
+
+        .flex-equal-height .column {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .flex-equal-height .column:nth-child(1) {
+            background: #3498db;
+            color: white;
+        }
+
+        .flex-equal-height .column:nth-child(2) {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .flex-equal-height .column:nth-child(3) {
+            background: #2ecc71;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .flex-equal-height {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>等高布局 - Flexbox</h1>
+    <div class="flex-equal-height">
+        <div class="column">
+            <h3>第一列</h3>
+            <p>这是一段较短的文字</p>
+        </div>
+        <div class="column">
+            <h3>第二列</h3>
+            <p>这是一段中等长度的文字。</p>
+            <p>包含多行内容。</p>
+            <p>看起来会比第一列长。</p>
+        </div>
+        <div class="column">
+            <h3>第三列</h3>
+            <p>这是一段很长的文字内容。</p>
+            <p>包含了很多行。</p>
+            <p>是三列中最长的。</p>
+            <p>会占据很多空间。</p>
+            <p>但是三列高度相同！</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法二：Grid 等高布局**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等高布局 - Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Grid 等高布局 */
+        .grid-equal-height {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .grid-equal-height .column {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .grid-equal-height .column:nth-child(1) {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .grid-equal-height .column:nth-child(2) {
+            background: #f39c12;
+            color: white;
+        }
+
+        .grid-equal-height .column:nth-child(3) {
+            background: #1abc9c;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .grid-equal-height {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>等高布局 - Grid</h1>
+    <div class="grid-equal-height">
+        <div class="column">
+            <h3>第一列</h3>
+            <p>这是一段较短的文字</p>
+        </div>
+        <div class="column">
+            <h3>第二列</h3>
+            <p>这是一段中等长度的文字。</p>
+            <p>包含多行内容。</p>
+            <p>看起来会比第一列长。</p>
+        </div>
+        <div class="column">
+            <h3>第三列</h3>
+            <p>这是一段很长的文字内容。</p>
+            <p>包含了很多行。</p>
+            <p>是三列中最长的。</p>
+            <p>会占据很多空间。</p>
+            <p>但是三列高度相同！</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+**方法三：Table 布局实现等高**
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等高布局 - Table</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Table 等高布局 */
+        .table-equal-height {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-spacing: 20px;
+        }
+
+        .table-equal-height .column {
+            display: table-cell;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .table-equal-height .column:nth-child(1) {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .table-equal-height .column:nth-child(2) {
+            background: #3498db;
+            color: white;
+        }
+
+        .table-equal-height .column:nth-child(3) {
+            background: #9b59b6;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .table-equal-height {
+                display: block;
+            }
+
+            .table-equal-height .column {
+                display: block;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>等高布局 - Table</h1>
+    <div class="table-equal-height">
+        <div class="column">
+            <h3>第一列</h3>
+            <p>这是一段较短的文字</p>
+        </div>
+        <div class="column">
+            <h3>第二列</h3>
+            <p>这是一段中等长度的文字。</p>
+            <p>包含多行内容。</p>
+            <p>看起来会比第一列长。</p>
+        </div>
+        <div class="column">
+            <h3>第三列</h3>
+            <p>这是一段很长的文字内容。</p>
+            <p>包含了很多行。</p>
+            <p>是三列中最长的。</p>
+            <p>会占据很多空间。</p>
+            <p>但是三列高度相同！</p>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### 6.7 CSS 栅格系统
+
+**参考答案：**
+
+栅格系统是现代前端框架的基础，如 Bootstrap、Foundation 等都基于栅格系统。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS 栅格系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* 栅格系统 */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+
+        /* 列基础样式 */
+        .col {
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 12列栅格 */
+        .col-1 { width: 8.333333%; }
+        .col-2 { width: 16.666667%; }
+        .col-3 { width: 25%; }
+        .col-4 { width: 33.333333%; }
+        .col-5 { width: 41.666667%; }
+        .col-6 { width: 50%; }
+        .col-7 { width: 58.333333%; }
+        .col-8 { width: 66.666667%; }
+        .col-9 { width: 75%; }
+        .col-10 { width: 83.333333%; }
+        .col-11 { width: 91.666667%; }
+        .col-12 { width: 100%; }
+
+        /* 响应式断点 */
+        /* 超小屏幕 */
+        @media (max-width: 575px) {
+            .col-xs-1 { width: 8.333333%; }
+            .col-xs-2 { width: 16.666667%; }
+            .col-xs-3 { width: 25%; }
+            .col-xs-4 { width: 33.333333%; }
+            .col-xs-5 { width: 41.666667%; }
+            .col-xs-6 { width: 50%; }
+            .col-xs-7 { width: 58.333333%; }
+            .col-xs-8 { width: 66.666667%; }
+            .col-xs-9 { width: 75%; }
+            .col-xs-10 { width: 83.333333%; }
+            .col-xs-11 { width: 91.666667%; }
+            .col-xs-12 { width: 100%; }
+        }
+
+        /* 小屏幕 */
+        @media (min-width: 576px) and (max-width: 767px) {
+            .col-sm-1 { width: 8.333333%; }
+            .col-sm-2 { width: 16.666667%; }
+            .col-sm-3 { width: 25%; }
+            .col-sm-4 { width: 33.333333%; }
+            .col-sm-5 { width: 41.666667%; }
+            .col-sm-6 { width: 50%; }
+            .col-sm-7 { width: 58.333333%; }
+            .col-sm-8 { width: 66.666667%; }
+            .col-sm-9 { width: 75%; }
+            .col-sm-10 { width: 83.333333%; }
+            .col-sm-11 { width: 91.666667%; }
+            .col-sm-12 { width: 100%; }
+        }
+
+        /* 中等屏幕 */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .col-md-1 { width: 8.333333%; }
+            .col-md-2 { width: 16.666667%; }
+            .col-md-3 { width: 25%; }
+            .col-md-4 { width: 33.333333%; }
+            .col-md-5 { width: 41.666667%; }
+            .col-md-6 { width: 50%; }
+            .col-md-7 { width: 58.333333%; }
+            .col-md-8 { width: 66.666667%; }
+            .col-md-9 { width: 75%; }
+            .col-md-10 { width: 83.333333%; }
+            .col-md-11 { width: 91.666667%; }
+            .col-md-12 { width: 100%; }
+        }
+
+        /* 大屏幕 */
+        @media (min-width: 992px) {
+            .col-lg-1 { width: 8.333333%; }
+            .col-lg-2 { width: 16.666667%; }
+            .col-lg-3 { width: 25%; }
+            .col-lg-4 { width: 33.333333%; }
+            .col-lg-5 { width: 41.666667%; }
+            .col-lg-6 { width: 50%; }
+            .col-lg-7 { width: 58.333333%; }
+            .col-lg-8 { width: 66.666667%; }
+            .col-lg-9 { width: 75%; }
+            .col-lg-10 { width: 83.333333%; }
+            .col-lg-11 { width: 91.666667%; }
+            .col-lg-12 { width: 100%; }
+        }
+
+        /* 栅格列样式 */
+        .demo-col {
+            background: #3498db;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .demo-col:nth-child(even) {
+            background: #2980b9;
+        }
+
+        /* 偏移 */
+        .offset-1 { margin-left: 8.333333%; }
+        .offset-2 { margin-left: 16.666667%; }
+        .offset-3 { margin-left: 25%; }
+        .offset-4 { margin-left: 33.333333%; }
+        .offset-5 { margin-left: 41.666667%; }
+        .offset-6 { margin-left: 50%; }
+        .offset-7 { margin-left: 58.333333%; }
+        .offset-8 { margin-left: 66.666667%; }
+        .offset-9 { margin-left: 75%; }
+        .offset-10 { margin-left: 83.333333%; }
+        .offset-11 { margin-left: 91.666667%; }
+
+        /* 排序 */
+        .order-first { order: -1; }
+        .order-1 { order: 1; }
+        .order-2 { order: 2; }
+        .order-3 { order: 3; }
+        .order-4 { order: 4; }
+        .order-last { order: 999; }
+
+        /* 间距 */
+        .mb-0 { margin-bottom: 0; }
+        .mb-1 { margin-bottom: 10px; }
+        .mb-2 { margin-bottom: 20px; }
+        .mb-3 { margin-bottom: 30px; }
+
+        /* 演示区域标题 */
+        .demo-title {
+            margin: 30px 0 20px;
+            padding: 10px 20px;
+            background: #2c3e50;
+            color: white;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS 栅格系统</h1>
+
+    <div class="container">
+        <!-- 12列均分 -->
+        <h2 class="demo-title">12列均分 (col-1)</h2>
+        <div class="row">
+            <div class="col col-1"><div class="demo-col">1</div></div>
+            <div class="col col-1"><div class="demo-col">2</div></div>
+            <div class="col col-1"><div class="demo-col">3</div></div>
+            <div class="col col-1"><div class="demo-col">4</div></div>
+            <div class="col col-1"><div class="demo-col">5</div></div>
+            <div class="col col-1"><div class="demo-col">6</div></div>
+            <div class="col col-1"><div class="demo-col">7</div></div>
+            <div class="col col-1"><div class="demo-col">8</div></div>
+            <div class="col col-1"><div class="demo-col">9</div></div>
+            <div class="col col-1"><div class="demo-col">10</div></div>
+            <div class="col col-1"><div class="demo-col">11</div></div>
+            <div class="col col-1"><div class="demo-col">12</div></div>
+        </div>
+
+        <!-- 常见布局 -->
+        <h2 class="demo-title">常见布局</h2>
+
+        <!-- 2:1 布局 -->
+        <div class="row">
+            <div class="col col-8"><div class="demo-col">col-8 (2/3)</div></div>
+            <div class="col col-4"><div class="demo-col">col-4 (1/3)</div></div>
+        </div>
+
+        <!-- 1:1 布局 -->
+        <div class="row">
+            <div class="col col-6"><div class="demo-col">col-6 (1/2)</div></div>
+            <div class="col col-6"><div class="demo-col">col-6 (1/2)</div></div>
+        </div>
+
+        <!-- 3列等分 -->
+        <div class="row">
+            <div class="col col-4"><div class="demo-col">col-4 (1/3)</div></div>
+            <div class="col col-4"><div class="demo-col">col-4 (1/3)</div></div>
+            <div class="col col-4"><div class="demo-col">col-4 (1/3)</div></div>
+        </div>
+
+        <!-- 4列等分 -->
+        <div class="row">
+            <div class="col col-3"><div class="demo-col">col-3 (1/4)</div></div>
+            <div class="col col-3"><div class="demo-col">col-3 (1/4)</div></div>
+            <div class="col col-3"><div class="demo-col">col-3 (1/4)</div></div>
+            <div class="col col-3"><div class="demo-col">col-3 (1/4)</div></div>
+        </div>
+
+        <!-- 偏移示例 -->
+        <h2 class="demo-title">偏移示例</h2>
+        <div class="row">
+            <div class="col col-4 offset-4"><div class="demo-col">col-4 offset-4</div></div>
+        </div>
+        <div class="row">
+            <div class="col col-3 offset-3"><div class="demo-col">col-3 offset-3</div></div>
+            <div class="col col-3 offset-3"><div class="demo-col">col-3 offset-3</div></div>
+        </div>
+
+        <!-- 响应式示例 -->
+        <h2 class="demo-title">响应式栅格 (移动端 12列，桌面端 6列)</h2>
+        <div class="row">
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+            <div class="col col-12 col-md-6 col-lg-4"><div class="demo-col">col-12 col-md-6 col-lg-4</div></div>
+        </div>
+
+        <!-- 排序示例 -->
+        <h2 class="demo-title">排序示例</h2>
+        <div class="row">
+            <div class="col col-4 order-last"><div class="demo-col">order-last (第3)</div></div>
+            <div class="col col-4 order-1"><div class="demo-col">order-1 (第2)</div></div>
+            <div class="col col-4 order-first"><div class="demo-col">order-first (第1)</div></div>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### 6.8 CSS 变量（自定义属性）
+
+**参考答案：**
+
+CSS 变量（自定义属性）允许我们定义可复用的值，并在整个文档中使用。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS 变量详解</title>
+    <style>
+        /* 定义 CSS 变量 */
+        :root {
+            /* 颜色变量 */
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #9b59b6;
+
+            /* 背景色 */
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+
+            /* 文字颜色 */
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+
+            /* 间距 */
+            --spacing-xs: 5px;
+            --spacing-sm: 10px;
+            --spacing-md: 20px;
+            --spacing-lg: 30px;
+            --spacing-xl: 40px;
+
+            /* 圆角 */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --border-radius-full: 9999px;
+
+            /* 阴影 */
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+
+            /* 过渡 */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+
+            /* 字体 */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-size-sm: 12px;
+            --font-size-md: 14px;
+            --font-size-lg: 18px;
+            --font-size-xl: 24px;
+        }
+
+        /* 深色主题 */
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-color);
+            color: var(--text-primary);
+            padding: var(--spacing-lg);
+            transition: background var(--transition-normal), color var(--transition-normal);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            color: var(--primary-color);
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-md);
+            transition: all var(--transition-normal);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: var(--font-size-md);
+            transition: all var(--transition-fast);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+            margin: var(--spacing-md) 0;
+        }
+
+        /* 主题切换 */
+        .theme-switch {
+            position: fixed;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+        }
+
+        /* 颜色示例 */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .color-item {
+            background: var(--card-bg);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 60px;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            :root {
+                --spacing-lg: 20px;
+                --spacing-md: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS 变量（自定义属性）</h1>
+
+    <!-- 主题切换 -->
+    <div class="theme-switch">
+        <button class="btn btn-outline" onclick="toggleTheme()">切换主题</button>
+    </div>
+
+    <!-- 基础使用 -->
+    <div class="card">
+        <h2>基础使用</h2>
+        <p>CSS 变量使用 -- 前缀定义，通过 var() 函数使用。</p>
+        <div class="btn-group">
+            <button class="btn btn-primary">主要按钮</button>
+            <button class="btn btn-secondary">次要按钮</button>
+            <button class="btn btn-outline">轮廓按钮</button>
+        </div>
+    </div>
+
+    <!-- 颜色变量 -->
+    <div class="card">
+        <h2>颜色变量</h2>
+        <div class="color-grid">
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--primary-color)"></div>
+                <p>primary-color</p>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--secondary-color)"></div>
+                <p>secondary-color</p>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--success-color)"></div>
+                <p>success-color</p>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--warning-color)"></div>
+                <p>warning-color</p>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--danger-color)"></div>
+                <p>danger-color</p>
+            </div>
+            <div class="color-item">
+                <div class="color-swatch" style="background: var(--info-color)"></div>
+                <p>info-color</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 操作 -->
+    <div class="card">
+        <h2>JavaScript 操作 CSS 变量</h2>
+        <p>可以通过 JavaScript 读取和修改 CSS 变量。</p>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="changeColor()">改变主色</button>
+            <button class="btn btn-primary" onclick="changeSpacing()">改变间距</button>
+            <button class="btn btn-primary" onclick="resetStyles()">重置样式</button>
+        </div>
+        <p id="demo">点击按钮查看 JavaScript 操作 CSS 变量的效果。</p>
+    </div>
+
+    <script>
+        // 切换主题
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        // 改变主色
+        function changeColor() {
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.documentElement.style.setProperty('--primary-color', randomColor);
+        }
+
+        // 改变间距
+        function changeSpacing() {
+            const spacing = Math.floor(Math.random() * 30) + 10;
+            document.documentElement.style.setProperty('--spacing-md', spacing + 'px');
+        }
+
+        // 重置样式
+        function resetStyles() {
+            document.documentElement.style.removeProperty('--primary-color');
+            document.documentElement.style.removeProperty('--spacing-md');
+        }
+
+        // 读取 CSS 变量
+        const primaryColor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--primary-color').trim();
+        console.log('主色:', primaryColor);
+
+        // 监听 CSS 变量变化
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'style' && mutation.attributeName === 'style') {
+                    console.log('CSS 变量已变化');
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    </script>
+</body>
+</html>
+```
+
+**CSS 变量详解：**
+
+```css
+/* 定义变量 */
+:root {
+    /* 颜色 */
+    --primary: #3498db;
+    --secondary: #2ecc71;
+
+    /* 尺寸 */
+    --spacing: 20px;
+    --font-size: 16px;
+
+    /* 计算 */
+    --container-width: calc(100% - 40px);
+}
+
+/* 使用变量 */
+.element {
+    color: var(--primary);
+    padding: var(--spacing);
+    font-size: var(--font-size);
+}
+
+/* 带默认值的变量 */
+.element {
+    color: var(--primary, #333);  /* 如果 --primary 未定义，使用 #333 */
+}
+
+/* 在 calc() 中使用 */
+.element {
+    width: calc(100% - var(--spacing) * 2);
+}
+
+/* 媒体查询中修改变量 */
+@media (max-width: 768px) {
+    :root {
+        --spacing: 10px;
+        --font-size: 14px;
+    }
+}
+
+/* JavaScript 操作 */
+element.style.setProperty('--primary', '#ff0000');
+element.style.getPropertyValue('--primary');
+element.style.removeProperty('--primary');
+```
+
+---
+
+### 6.9 CSS 性能优化
+
+**参考答案：**
+
+CSS 性能优化是前端性能优化的重要组成部分，直接影响页面的渲染速度和用户体验。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS 性能优化</title>
+    <style>
+        /* ============================================
+           CSS 性能优化最佳实践
+           ============================================ */
+
+        /* 1. 使用 transform 和 opacity 进行动画 */
+        .good-animation {
+            /* 最佳：只触发合成 */
+            transform: translateX(100px);
+            opacity: 0.5;
+            /* 使用 will-change 提示浏览器优化 */
+            will-change: transform, opacity;
+        }
+
+        /* 避免使用这些属性进行动画 */
+        .bad-animation {
+            /* 会触发重排 */
+            width: 100px;
+            height: 100px;
+            left: 50px;
+            top: 50px;
+            margin: 10px;
+            padding: 10px;
+            /* 会触发重绘 */
+            background-color: red;
+            color: blue;
+            border-color: green;
+        }
+
+        /* 2. 使用 CSS 硬件加速 */
+        .gpu-accelerate {
+            /* 3D 变换触发 GPU 加速 */
+            transform: translateZ(0);
+            /* 或者使用 */
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* 3. 避免过度使用通配符 */
+        /* 慢 */
+        /* * { margin: 0; padding: 0; } */
+        /* 快 */
+        body, h1, h2, h3, p {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 4. 使用 will-change 优化即将变化的元素 */
+        .will-change-element {
+            will-change: transform;
+            /* 使用完毕后移除 */
+        }
+        .will-change-element.done {
+            will-change: auto;
+        }
+
+        /* 5. 使用 contain 属性隔离布局 */
+        .isolated-layout {
+            /* 禁止内部元素影响外部布局 */
+            contain: layout;
+            /* 限制样式计算范围 */
+            contain: style;
+            /* 限制绘制范围 */
+            contain: paint;
+            /* 组合使用 */
+            contain: strict;
+        }
+
+        /* 6. 使用 content-visibility 优化长列表 */
+        .lazy-render {
+            content-visibility: auto;
+            contain-intrinsic-size: 500px;
+        }
+
+        /* 7. 优化选择器 */
+        /* 慢：过度嵌套 */
+        /* .header .nav .nav-item .nav-link { } */
+        /* 快：保持选择器简洁 */
+        .nav-link { }
+
+        /* 8. 使用 CSS 变量减少重复代码 */
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .card {
+            border: 1px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS 性能优化</h1>
+
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <article>
+            <h2>1. 渲染性能优化</h2>
+            <p>理解浏览器的渲染流程：解析 HTML -> 构建 DOM -> 解析 CSS -> 构建 CSSOM -> 合并为渲染树 -> 布局 -> 绘制 -> 合成</p>
+
+            <h3>避免触发重排（Reflow）</h3>
+            <ul>
+                <li>改变 width、height、padding、margin</li>
+                <li>改变 position（left、top）</li>
+                <li>读取 offsetWidth、offsetHeight 等属性</li>
+            </ul>
+
+            <h3>避免触发重绘（Repaint）</h3>
+            <ul>
+                <li>改变 background-color、color</li>
+                <li>改变 border-color、border-width</li>
+                <li>改变 visibility、outline</li>
+            </ul>
+
+            <h3>优先使用合成属性</h3>
+            <ul>
+                <li>transform: translate()、scale()、rotate()</li>
+                <li>opacity</li>
+                <li>filter</li>
+                <li>clip-path</li>
+            </ul>
+
+            <h2>2. 选择器性能</h2>
+            <ul>
+                <li>避免使用通配符 *</li>
+                <li>避免过度嵌套（建议不超过 3 层）</li>
+                <li>避免使用标签选择器作为 key 选择器</li>
+                <li>使用 class 选择器替代属性选择器</li>
+                <li>id 选择器最快，尽量使用</li>
+            </ul>
+
+            <h2>3. CSS 优化技巧</h2>
+            <ul>
+                <li>使用 CSS 变量减少重复代码</li>
+                <li>使用 will-change 预知即将变化</li>
+                <li>使用 contain 隔离布局计算</li>
+                <li>使用 content-visibility 优化长列表</li>
+                <li>使用 contain-intrinsic-size 指定固有尺寸</li>
+            </ul>
+
+            <h2>4. 加载性能</h2>
+            <ul>
+                <li>将 CSS 放在 head 中尽快加载</li>
+                <li>使用媒体查询拆分 CSS</li>
+                <li>使用 link 预加载关键 CSS</li>
+                <li>避免使用 @import 导入 CSS</li>
+            </ul>
+
+            <h2>5. 动画性能</h2>
+            <ul>
+                <li>使用 requestAnimationFrame</li>
+                <li>使用 CSS 动画替代 JavaScript 动画</li>
+                <li>对动画元素使用 transform: translateZ(0) 启用 GPU</li>
+                <li>动画结束后移除 will-change</li>
+            </ul>
+        </article>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### 6.10 高频 HTML/CSS 面试题
+
+**参考答案：**
+
+#### 面试题 1：如何理解 HTML 语义化？
+
+**参考答案：**
+
+HTML 语义化是指使用恰当的 HTML 标签来表达内容的含义，而不是仅仅用 div 和 span。
+
+**好处：**
+
+1. **SEO 优化**：搜索引擎爬虫能更好地理解页面结构，提高关键词排名
+2. **可访问性**：屏幕阅读器能正确解析，便于视障用户浏览
+3. **代码可读性**：便于开发者维护和团队协作
+4. **结构清晰**：DOM 树更加规范
+
+**常用语义标签：**
+
+```html
+<header>页面头部</header>
+<nav>导航区域</nav>
+<main>主内容区</main>
+<article>独立文章</article>
+<section>章节区块</section>
+<aside>侧边栏</aside>
+<footer>页面底部</footer>
+<time datetime="2024-01-01">时间</time>
+<address>联系信息</address>
+```
+
+---
+
+#### 面试题 2：如何理解 CSS 盒模型？
+
+**参考答案：**
+
+CSS 盒模型是 CSS 布局的基础概念，每个 HTML 元素都被看作一个矩形盒子。
+
+**组成：**
+
+```
+┌────────────────────────────┐
+│        margin (外边距)       │
+│  ┌────────────────────────┐ │
+│  │    border (边框)        │ │
+│  ┌────────────────────────┤ │
+│  │    padding (内边距)     │ │
+│  ┌────────────────────────┤ │
+│  │    content (内容区)     │ │
+│  └────────────────────────┘ │
+└────────────────────────────┘
+```
+
+**两种盒模型：**
+
+1. **content-box（默认）**
+   - width = 内容宽度
+   - 总宽度 = width + padding + border + margin
+
+2. **border-box**
+   - width = 内容 + padding + border
+   - 总宽度 = width + margin
+
+**设置方式：**
+
+```css
+/* 默认 */
+box-sizing: content-box;
+
+/* 推荐 */
+box-sizing: border-box;
+```
+
+---
+
+#### 面试题 3：如何理解 BFC？
+
+**参考答案：**
+
+BFC（Block Formatting Context，块级格式化上下文）是一个独立的渲染区域。
+
+**触发条件：**
+
+- 根元素
+- float 不为 none
+- position 不为 static/relative
+- display 为 inline-block、flex、grid 等
+- overflow 不为 visible
+
+**特性：**
+
+1. 内部 Box 垂直方向排列
+2. 同一 BFC 中相邻 Box 的 margin 会重叠
+3. BFC 区域不会与 float 元素重叠
+4. 计算 BFC 高度时，浮动元素参与计算
+
+**应用场景：**
+
+```css
+/* 清除浮动 */
+.parent {
+    overflow: hidden;
+}
+
+/* 防止 margin 重叠 */
+.container {
+    overflow: hidden;
+}
+
+/* 自适应两栏布局 */
+.left { float: left; width: 200px; }
+.right { overflow: hidden; }
+```
+
+---
+
+#### 面试题 4：Flexbox 和 Grid 的区别？
+
+**参考答案：**
+
+| 特性 | Flexbox | Grid |
+|------|---------|------|
+| 维度 | 一维布局 | 二维布局 |
+| 方向 | 水平/垂直 | 行和列 |
+| 适用场景 | 导航栏、列表、卡片 | 页面整体布局、复杂网格 |
+| 对齐 | 丰富 | 基础 |
+
+**Flexbox 适用场景：**
+
+```css
+/* 水平居中 */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 等高列 */
+.flex-equal {
+    display: flex;
+}
+```
+
+**Grid 适用场景：**
+
+```css
+/* 页面布局 */
+.page-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+        "header header header"
+        "sidebar main aside"
+        "footer footer footer";
+}
+```
+
+---
+
+#### 面试题 5：如何实现垂直居中？
+
+**参考答案：**
+
+**方法一：Flexbox**
+
+```css
+.parent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+```
+
+**方法二：Grid**
+
+```css
+.parent {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+}
+```
+
+**方法三：绝对定位 + transform**
+
+```css
+.parent {
+    position: relative;
+    height: 100vh;
+}
+
+.child {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+```
+
+**方法四：绝对定位 + margin**
+
+```css
+.parent {
+    position: relative;
+    height: 100vh;
+}
+
+.child {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    width: 100px;
+    height: 100px;
+}
+```
+
+---
+
+#### 面试题 6：如何实现响应式布局？
+
+**参考答案：**
+
+**1. 媒体查询**
+
+```css
+/* 断点设置 */
+@media (max-width: 1200px) { /* 大桌面 */ }
+@media (max-width: 992px) { /* 桌面 */ }
+@media (max-width: 768px) { /* 平板 */ }
+@media (max-width: 576px) { /* 手机 */ }
+
+/* 最小宽度断点 */
+@media (min-width: 576px) { /* 手机以上 */ }
+@media (min-width: 768px) { /* 平板以上 */ }
+```
+
+**2. Flexbox 响应式**
+
+```css
+.container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.item {
+    flex: 0 0 100%;
+}
+
+@media (min-width: 768px) {
+    .item {
+        flex: 0 0 50%;
+    }
+}
+
+@media (min-width: 992px) {
+    .item {
+        flex: 0 0 33.33%;
+    }
+}
+```
+
+**3. Grid 响应式**
+
+```css
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+```
+
+**4. 视口单位**
+
+```css
+/* 响应式字体 */
+html {
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+}
+
+/* 使用 rem/vw */
+.responsive {
+    width: 50vw;
+    height: 50vh;
+    font-size: 2rem;
+}
+```
+
+---
+
+#### 面试题 7：CSS 选择器优先级如何计算？
+
+**参考答案：**
+
+```
+优先级权重：
+!important     →  无穷大
+内联样式        →  1000
+ID 选择器       →  100
+类/属性/伪类    →  10
+元素/伪元素     →  1
+通配符/组合     →  0
+```
+
+**计算示例：**
+
+```css
+/* 优先级: 0-1-0-1 = 101 */
+#nav .list-item { }
+
+/* 优先级: 0-0-2-0 = 20 */
+:hover .active { }
+
+/* 优先级: 0-0-1-2 = 12 */
+div ul li { }
+
+/* 优先级: 0-1-0-1 = 101 */
+#app .card:hover { }
+```
+
+**重要规则：**
+
+- `!important` 优先级最高，慎用
+- 相同优先级时，后定义的覆盖先定义的
+- `:not()` 内部选择器参与权重计算
+- `*` 不增加权重
+
+---
+
+#### 面试题 8：如何清除浮动？
+
+**参考答案：**
+
+**方法一：父元素 overflow**
+
+```css
+.parent {
+    overflow: hidden; /* 触发 BFC */
+}
+```
+
+**方法二：父元素添加伪元素**
+
+```css
+.parent::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+```
+
+**方法三：父元素使用 display: flow-root**
+
+```css
+.parent {
+    display: flow-root;
+}
+```
+
+**方法四：父元素使用 float**
+
+```css
+.parent {
+    float: left;
+}
+```
+
+---
+
+> 资料整理自 2024 字节跳动、阿里巴巴、拼多多面试

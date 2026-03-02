@@ -16,14 +16,17 @@ COPY apps/web/package*.json ./
 RUN pnpm install
 
 # 复制源代码
-COPY apps/web .
-
-# 复制静态资源
 COPY apps/web/src ./src
-COPY apps/web/public ./public
+COPY apps/web/next.config.js ./
+COPY apps/web/tailwind.config.js ./
+COPY apps/web/postcss.config.js ./
+COPY apps/web/tsconfig.json ./
+
+# 创建空public目录
+RUN mkdir -p public
 
 # 暴露端口
 EXPOSE 33980
 
-# 启动命令
-CMD ["pnpm", "dev"]
+# 启动命令 - 使用npx
+CMD ["npx", "next", "dev", "-p", "33980", "--turbopack"]

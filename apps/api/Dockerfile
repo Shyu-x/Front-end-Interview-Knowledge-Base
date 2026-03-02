@@ -6,23 +6,19 @@ FROM node:20-alpine
 # 设置工作目录
 WORKDIR /app
 
-# 安装 pnpm
-RUN npm install -g pnpm
-
 # 复制依赖文件
 COPY apps/api/package*.json ./
 
-# 安装依赖
-RUN pnpm install
+# 安装依赖 - 包括devDependencies
+RUN npm install
 
 # 复制源代码
-COPY apps/api .
-
-# 复制文档目录
-COPY 前端面试题汇总 ../前端面试题汇总
+COPY apps/api/src ./src
+COPY apps/api/nest-cli.json ./
+COPY apps/api/tsconfig.json ./
 
 # 暴露端口
 EXPOSE 42123
 
-# 启动命令
-CMD ["npm", "run", "start:dev"]
+# 启动命令 - 使用npx来运行nest
+CMD ["npx", "nest", "start", "--watch", "--port", "42123"]
