@@ -731,6 +731,282 @@ element.style.width = width + 'px';
 
 ---
 
+### 1.X CSS 渲染与合成层底层原理
+
+**参考答案：**
+
+#### 1.X.1 CSS 样式计算过程 (Style Calculation)
+
+**选择器匹配过程**：
+1. **遍历 DOM 树**：从根节点遍历每个元素
+2. **收集适用规则**：为每个元素收集匹配的 CSS 规则
+3. **计算优先级**：根据选择器类型计算特异性
+4. **层叠处理**：应用层叠算法确定最终样式
+
+```javascript
+// 简化选择器匹配流程
+function matchRule(element, rules) {
+  const matchedRules = [];
+  for (const rule of rules) {
+    if (matchSelector(element, rule.selector)) {
+      matchedRules.push(rule);
+    }
+  }
+  return sortBySpecificity(matchedRules);
+}
+```
+
+**优先级计算详细**：
+- `id` 选择器：`#nav` = 100
+- 类/属性/伪类：`.active` = 10
+- 元素/伪元素：`div` = 1
+- 通配符/组合符：`*`, `>`, `+`, `~` = 0
+
+```css
+/* 优先级: 0-1-1-1 = 111 */
+ul li .item { color: blue; }
+
+/* 优先级: 0-1-0-1 = 101 */
+#nav .item { color: red; }  /* 胜出 */
+
+/* !important 最高优先级 */
+.item { color: green !important; }
+```
+
+**规则树 (Rule Tree) 缓存机制**：
+- Blink/WebKit 使用**规则树**缓存选择器匹配结果
+- 避免重复计算相同样式组合
+- 样式共享：相同计算样式的元素共享同一样式对象
+
+#### 1.X.2 渲染层 vs 图形层
+
+**何时创建独立合成层**：
+- 3D transform: `transform: translate3d(0,0,0)`
+- video、canvas 元素
+- 动画使用 `will-change`
+- CSS 滤镜：`filter: blur(5px)`
+- 节点具有 CSS 动画/过渡
+
+```css
+/* 创建合成层 */
+.layer {
+  transform: translateZ(0);
+  will-change: transform;
+}
+```
+
+**Render Layer 与 Graphics Layer 的区别**：
+
+| 层级 | 说明 |
+| :--- | :--- |
+| **Render Layer** | 渲染层，DOM 元素的逻辑层，负责布局计算 |
+| **Graphics Layer** | 图形层，合成层的位图，负责 GPU 合成 |
+
+```
+DOM 树 → Render Layer 树 → Graphics Layer 树 → 位图 → 屏幕
+```
+
+**will-change 的底层原理**：
+- 提示浏览器创建独立的 Graphics Layer
+- 提前分配 GPU 内存
+- 避免动画触发重排/重绘
+
+```css
+/* 合理使用 */
+.optimized {
+  will-change: transform, opacity;
+}
+
+/* 过度使用会导致内存浪费 */
+.overused {
+  will-change: all;  /* ❌ 不推荐 */
+}
+```
+
+#### 1.X.3 contains CSS 属性
+
+**布局隔离**：
+```css
+.component {
+  contain: layout;
+  /* 内部布局不影响外部 */
+  /* 外部布局不影响内部 */
+}
+```
+
+**样式隔离**：
+```css
+.component {
+  contain: style;
+  /* 计数器、动态 CSS 不溢出 */
+}
+```
+
+**绘制隔离**：
+```css
+.component {
+  contain: paint;
+  /* 绘制区域限制在组件边界内 */
+  /* 不可见时完全跳过绘制 */
+}
+```
+
+**全部隔离**：
+```css
+.component {
+  contain: strict;
+  /* 等同于 contain: layout style paint; */
+}
+```
+
+**实战应用**：
+```css
+/* 隔离第三方组件，防止样式泄漏 */
+.vendor-widget {
+  contain: content;
+}
+
+/* 大型列表项优化 */
+.list-item {
+  contain: paint layout;
+}
+```
+
+#### 1.X.4 content-visibility 底层机制
+
+```css
+.lazy-render {
+  content-visibility: auto;
+  /* 跳过渲染直到进入视口 */
+}
+
+.off-screen {
+  content-visibility: hidden;
+  /* 完全跳过渲染，保留布局空间 */
+}
+```
+
+**底层原理**：
+1. 视口外的元素不参与布局计算
+2. 跳过绘制和光栅化
+3. 进入视口时触发延迟渲染
+4. 类似于 React/Virtual List 的原生实现
+
+```css
+/* 结合 contain 使用 */
+.card {
+  content-visibility: auto;
+  contain: content;
+}
+```
+
+---
+
+### 2.X HTML 解析与 DOM 构建
+
+**参考答案：**
+
+#### 2.X.1 HTML5 解析算法
+
+**Tokenization 词法分析**：
+
+```
+HTML 字节 → 字符流 → 词法分析器 → Token 序列
+```
+
+**Token 类型**：
+- StartTag: `<div>`
+- EndTag: `</div>`
+- SelfClosingTag: `<img />`
+- Character: 文本内容
+- Comment: `<!-- comment -->`
+- DOCTYPE: `<!DOCTYPE html>`
+
+```javascript
+// 简化的状态机伪代码
+function tokenize(html) {
+  const tokens = [];
+  let state = 'data';
+
+  for (const char of html) {
+    switch (state) {
+      case 'data':
+        if (char === '<') state = 'tagOpen';
+        else tokens.push({ type: 'Character', data: char });
+        break;
+      case 'tagOpen':
+        if (char === '/') state = 'endTagOpen';
+        else if (char === '!') state = 'markupDeclaration';
+        else state = 'tagName';
+        break;
+      // ... 更多状态
+    }
+  }
+  return tokens;
+}
+```
+
+**Tree Construction 语法分析**：
+
+```
+Token 序列 → 语法分析器 → DOM 树
+```
+
+**构建过程**：
+1. 创建 document 节点
+2. 遇到 StartTag：创建元素，加入 DOM 树
+3. 遇到 Character：创建文本节点
+4. 遇到 EndTag：关闭元素，更新栈
+
+#### 2.X.2 解析器容错机制
+
+**"adoption agency" 算法**：
+处理嵌套错误时移动节点到正确位置
+
+```html
+<!-- 错误嵌套 -->
+<div>
+  <span>
+    <div>错误嵌套</div>
+  </span>
+</div>
+
+<!-- 浏览器修复后 -->
+<div><span></span></div>
+<div>错误嵌套</div>
+```
+
+**常见容错策略**：
+
+| 问题 | 容错处理 |
+| :--- | :--- |
+| 缺失关闭标签 | 自动插入 |
+| 标签嵌套错误 | 节点移动/adoption agency |
+| 属性缺失引号 | 自动补全 |
+| 非法属性值 | 使用默认值 |
+| 未定义标签 | 作为未知元素处理 |
+
+```javascript
+// 浏览器容错示例
+// <div class=container> → <div class="container">
+// <img src=img.png> → <img src="img.png">
+// <div><span></div> → <div><span></span></div>
+```
+
+**HTML 规范定义的错误处理**：
+```html
+<!-- 缺失 DOCTYPE -->
+<!-- 浏览器使用 quirks mode -->
+
+<!-- 标签大小写不敏感 -->
+<DIV>等同于<div> -->
+
+<!-- 属性值可选引号 -->
+<input type=text> → <input type="text">
+```
+
+---
+
 ### 2.11 响应式设计策略
 
 **参考答案：**

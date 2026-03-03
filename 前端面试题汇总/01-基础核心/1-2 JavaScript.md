@@ -15460,3 +15460,407 @@ async function fetchWithRetry(fn, retries = 3) {
     }
 }
 ```
+
+---
+
+## 1.X JavaScript 引擎底层原理
+
+### 1.1 V8 引擎架构
+
+**四层编译器Pipeline**：
+
+```
+Ignition (解释器) → Sparkplug (快速编译) → Maglev (中层优化) → TurboFan (高层优化)
+```
+
+| 阶段 | 类型 | 作用 |
+| :--- | :--- | :--- |
+| **Ignition** | 解释器 | 生成字节码，收集类型反馈 |
+| **Sparkplug** | 基线编译器 | 快速编译字节码为机器码 |
+| **Maglev** | 中层优化 | 激进内联，轻量级优化 |
+| **TurboFan** | 优化编译器 | 激进优化，生成高效机器码 |
+
+**隐藏类 (Hidden Class)**：
+```javascript
+// 相同隐藏类的对象共享结构，属性访问更快
+class Point {
+    constructor(x, y) {
+        this.x = x;  // 隐藏类 C0 → C1
+        this.y = y;  // 隐藏类 C1 → C2
+    }
+}
+const p1 = new Point(1, 2);  // 隐藏类 C2
+const p2 = new Point(3, 4);  // 共享隐藏类 C2
+```
+
+### 1.2 JIT 编译原理
+
+**三阶段流程**：
+
+```javascript
+// 1. 解释执行阶段
+function add(a, b) {
+    return a + b;  // Ignition 生成字节码
+}
+
+// 2. 类型反馈收集
+// 多次调用后，收集类型信息
+add(1, 2);      // number + number
+add('a', 'b');  // string + string
+
+// 3. 优化编译与逆优化
+// TurboFan 生成优化代码，但类型变化时会逆优化
+add(1, 'a');    // 类型不匹配 → 逆优化回解释执行
+```
+
+**优化触发条件**：
+- 函数被多次调用（热点代码）
+- 类型稳定（类型反馈）
+- 可预测的代码模式
+
+### 1.3 内联缓存 (Inline Cache)
+
+**原理**：记录对象的隐藏类和属性偏移量，加速属性访问
+
+```javascript
+function getProperty(obj, key) {
+    return obj[key];  // 第一次：学习隐藏类和偏移量
+}
+
+const obj1 = { x: 1 };  // 隐藏类 A，x 偏移 12
+const obj2 = { x: 2 };  // 隐藏类 A（相同结构）
+
+getProperty(obj1, 'x');  // 命中缓存：隐藏类 A
+getProperty(obj2, 'x');  // 命中缓存
+```
+
+**Monomorphic vs Polymorphic**：
+```javascript
+// 单态 (Monomorphic)：一种类型，最快
+function foo(obj) { return obj.x; }
+foo({ x: 1 });
+foo({ x: 2 });  // 同隐藏类
+
+// 多态 (Polymorphic)：2-4种类型，较快
+function bar(obj) { return obj.x; }
+bar({ x: 1 });
+bar({ y: 2 });  // 不同隐藏类
+
+// 巨态 (Megamorphic)：>4种类型，较慢
+```
+
+### 1.4 字节码执行模型
+
+**V8 生成的字节码类型**：
+
+| 字节码 | 说明 |
+| :--- | :--- |
+| `LdaSmi` | 加载小整数 |
+| `LdaNamedProperty` | 加载命名属性 |
+| `StaNamedProperty` | 存储命名属性 |
+| `Call` | 调用函数 |
+| `Return` | 返回值 |
+| `Jump` | 跳转 |
+| `Compare` | 比较操作 |
+
+**字节码示例**：
+```javascript
+// 源代码
+function add(a, b) {
+    return a + b;
+}
+
+// Ignition 生成的字节码（简化）
+// LdaSmi a       ; 加载参数 a
+// LdaSmi b       ; 加载参数 b
+// Add            ; 相加
+// Return         ; 返回结果
+```
+
+---
+
+## 2.X 异步编程深入
+
+### 2.1 Promise 内部实现
+
+**状态机实现**：
+
+```javascript
+class MyPromise {
+    constructor(executor) {
+        this.state = 'pending';      // pending / fulfilled / rejected
+        this.value = undefined;
+        this.onFulfilledCallbacks = [];
+        this.onRejectedCallbacks = [];
+
+        const resolve = (value) => {
+            if (this.state !== 'pending') return;
+            this.state = 'fulfilled';
+            this.value = value;
+            this.onFulfilledCallbacks.forEach(cb => cb(value));
+        };
+
+        const reject = (reason) => {
+            if (this.state !== 'pending') return;
+            this.state = 'rejected';
+            this.value = reason;
+            this.onRejectedCallbacks.forEach(cb => cb(reason));
+        };
+
+        try {
+            executor(resolve, reject);
+        } catch (e) {
+            reject(e);
+        }
+    }
+
+    then(onFulfilled, onRejected) {
+        return new MyPromise((resolve, reject) => {
+            const handle = (callback, value) => {
+                try {
+                    const result = callback ? callback(value) : value;
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+
+            if (this.state === 'fulfilled') {
+                handle(onFulfilled, this.value);
+            } else if (this.state === 'rejected') {
+                handle(onRejected, this.value);
+            } else {
+                this.onFulfilledCallbacks.push(() => handle(onFulfilled, this.value));
+                this.onRejectedCallbacks.push(() => handle(onRejected, this.value));
+            }
+        });
+    }
+
+    catch(onRejected) {
+        return this.then(null, onRejected);
+    }
+
+    finally(onFinally) {
+        return this.then(
+            value => {
+                onFinally();
+                return value;
+            },
+            reason => {
+                onFinally();
+                throw reason;
+            }
+        );
+    }
+
+    static resolve(value) {
+        return new MyPromise(resolve => resolve(value));
+    }
+
+    static reject(reason) {
+        return new MyPromise((_, reject) => reject(reason));
+    }
+
+    static all(promises) {
+        return new MyPromise((resolve, reject) => {
+            const results = [];
+            let completed = 0;
+
+            promises.forEach((p, i) => {
+                p.then(value => {
+                    results[i] = value;
+                    if (++completed === promises.length) {
+                        resolve(results);
+                    }
+                }, reject);
+            });
+        });
+    }
+}
+```
+
+### 2.2 async/await 编译过程
+
+**转换为状态机**：
+
+```javascript
+// 源代码
+async function fetchData() {
+    const data = await fetch('/api');
+    return data.json();
+}
+
+// 编译后（状态机伪代码）
+function fetchData() {
+    return new MyPromise((resolve, reject) => {
+        // 状态 0: 开始
+        // 状态 1: fetch 完成后
+        // 状态 2: json 完成后
+
+        function step(state, value) {
+            try {
+                if (state === 0) {
+                    // await fetch('/api')
+                    const promise = fetch('/api');
+                    promise.then(
+                        result => step(1, result),
+                        reject
+                    );
+                } else if (state === 1) {
+                    // const data = await result.json()
+                    const data = value.json();
+                    data.then(
+                        result => resolve(result),
+                        reject
+                    );
+                }
+            } catch (e) {
+                reject(e);
+            }
+        }
+        step(0);
+    });
+}
+```
+
+**Promise 封装**：
+
+```javascript
+// async 函数返回值自动包装为 Promise
+async function example() {
+    return 42;  // 等同于 return Promise.resolve(42)
+}
+
+// await 等待 Promise resolve
+async function example2() {
+    const value = await Promise.resolve(42);
+    // 相当于 Promise.then(value => ...)
+    return value;
+}
+
+// 错误会被捕获并转为 rejected Promise
+async function example3() {
+    throw new Error('error');
+    // 等同于 return Promise.reject(new Error('error'))
+}
+```
+
+### 2.3 Generator 函数底层
+
+**状态机实现**：
+
+```javascript
+function* generator() {
+    yield 1;
+    yield 2;
+    return 3;
+}
+
+// 手动状态机模拟
+function generatorStateMachine() {
+    let state = 0;
+
+    return {
+        next(value) {
+            switch (state) {
+                case 0:
+                    state = 1;
+                    return { value: 1, done: false };
+                case 1:
+                    state = 2;
+                    return { value: 2, done: false };
+                case 2:
+                    return { value: 3, done: true };
+            }
+        }
+    };
+}
+```
+
+**yield 暂停/恢复机制**：
+
+```javascript
+function* gen() {
+    console.log('start');
+    const a = yield 1;     // 暂停，返回 1
+    console.log('a =', a); // 恢复后执行
+    const b = yield 2;     // 暂停，返回 2
+    console.log('b =', b);
+    return a + b;
+}
+
+const g = gen();
+
+// 启动，停在第一个 yield
+g.next();     // { value: 1, done: false }
+// "start" 输出
+
+// 传入值 10，继续执行到下一个 yield
+g.next(10);   // { value: 2, done: false }
+// "a = 10" 输出
+
+// 传入值 20，完成生成器
+g.next(20);   // { value: 30, done: true }
+// "b = 20" 输出
+```
+
+**完整 Generator 实现**：
+
+```javascript
+function myGenerator(executor) {
+    let state = 0;
+    let value;
+    let yielded;
+
+    return {
+        next(input) {
+            try {
+                if (state === 0) {
+                    // 启动生成器
+                    const result = executor(yielded => {
+                        value = yielded;
+                        state = 1;
+                    });
+                    state = 1;
+                    return { value: result, done: false };
+                } else if (state === 1) {
+                    // 恢复执行，传入的值作为 yield 的返回值
+                    yielded = input;
+                    // 这里需要配合外部调用继续
+                }
+            } catch (e) {
+                return { value: e, done: true };
+            }
+        },
+        throw(e) {
+            if (state === 0) {
+                throw e;
+            }
+            return { value: e, done: true };
+        }
+    };
+}
+```
+
+---
+
+## 面试速记
+
+### JavaScript 引擎
+- **V8 四层架构**：Ignition → Sparkplug → Maglev → TurboFan
+- **隐藏类**：相同结构的共享同一隐藏类，属性访问快
+- **JIT**：热点代码优化编译，类型变化时逆优化
+- **内联缓存**：记录属性偏移量，Monomorphic 最快
+
+### 异步编程
+- **Promise 状态**：pending/fulfilled/rejected，状态一旦改变不可逆
+- **then 返回新 Promise**：链式调用的基础
+- **async/await**：Generator + Promise 的语法糖，编译为状态机
+- **Generator**：yield 暂停执行，next() 传入值恢复，状态机实现
+
+### 关键点
+- V8 优化依赖类型稳定
+- 异步函数返回值自动 Promise 包装
+- await 等待 Promise，错误自动捕获转为 rejected
+- Generator 可实现协程，控制权可双向转移
+
