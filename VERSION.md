@@ -17,32 +17,28 @@ MAJOR.MINOR.PATCH
 ## 当前版本
 
 ```
-1.0.0
+1.1.0
 ```
 
 ## 版本历史
 
-### 1.0.0 (2026-03-03)
+### 1.1.0 (2026-03-03)
 
 #### 新增功能
-- 文档目录树展示
-- 文档内容阅读 (Markdown渲染)
-- 代码高亮
-- 侧边栏菜单与折叠
-- WebGL动态背景
-- PlantUML图表支持
-- 全局搜索功能
-- 目录自动生成 (TOC)
-- 暗色主题切换
-- 打印/导出功能
-- ECharts可视化图表
-- 收藏/书签功能
+- 浏览器渲染原理深度扩展 (Chrome多进程架构、Chromium渲染管线、GPU渲染机制)
+- 高帧率渲染优化 (160fps+、rAF最佳实践、帧率自适应)
+- Blink渲染引擎内部原理 (Style计算、增量布局、内存管理)
+- CSS渲染与合成层底层原理
+- HTML5解析算法与容错机制
+- JavaScript引擎底层原理 (V8架构、JIT编译、内联缓存)
+- React渲染机制底层 (Fiber架构、Concurrent Mode、Diff算法)
+- Node.js事件循环底层原理 (libuv、内存管理)
+- BFF架构深入 (聚合模式、缓存策略)
+- 前端工程化高级特性 (Tree Shaking、代码分割、CI/CD)
 
-#### 技术栈
-- Frontend: Next.js 16 + React 19 + Ant Design 5
-- Backend: NestJS 10
-- State: Zustand 5
-- Charts: ECharts
+#### 技术更新
+- 新增大量底层技术面试内容
+- 面试考点扩展至浏览器内核层面
 
 ## 更新日志
 
@@ -57,5 +53,5 @@ MAJOR.MINOR.PATCH
 
 ---
 
-*作者: Shyu <shyu@example.com>*
+*作者: Shyu*
 *项目主页: https://github.com/shyu/prepare-for*

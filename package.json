@@ -2,7 +2,7 @@
   "name": "prepare-for",
   "version": "1.0.0",
   "description": "前端面试题库系统 - 帮助开发者准备前端面试",
-  "author": "Shyu <shyu@example.com>",
+  "author": "Shyu",
   "license": "MIT",
   "private": true,
   "workspaces": [
