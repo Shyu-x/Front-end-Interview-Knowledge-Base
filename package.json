@@ -16,7 +16,9 @@
     "start": "concurrently \"yarn dev:api\" \"yarn dev:web\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.0",
+    "markdown-it": "^14.1.1",
+    "puppeteer": "^24.37.5"
   },
   "engines": {
     "node": ">=18.0.0",

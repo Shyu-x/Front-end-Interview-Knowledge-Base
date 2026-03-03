@@ -46,3 +46,6 @@ rebuild.js
 
 # Docker
 .docker/
+
+# PDF 输出
+PDF/*.pdf
