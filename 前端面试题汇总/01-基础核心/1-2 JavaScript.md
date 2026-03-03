@@ -13316,4 +13316,2147 @@ class RobustHttpClient {
 - 缓存 TTL 和过期处理
 - 重试机制的实现（指数退避、随机抖动）
 - 哪些状态码需要重试，哪些不需要
-- 缓存与重试的结合使用> 资料整理自 2025 字节跳动、阿里巴巴、拼多多面试
+- 缓存与重试的结合使用
+
+> 资料整理自 2025 字节跳动、阿里巴巴、拼多多面试
+
+---
+
+## 二十三、JavaScript 核心 API 速查手册
+
+> 适用于手写代码、算法题、LeetCode 刷题场景的 ES6+ 完整 API 语法速查
+
+### 目录
+
+1. [数组方法 (Array)](#二十三-1-数组方法-array)
+2. [字符串方法 (String)](#二十三-2-字符串方法-string)
+3. [对象方法 (Object)](#二十三-3-对象方法-object)
+4. [ES6+ 新增语法](#二十三-4-es6-新增语法)
+5. [Math 数学运算](#二十三-5-math-数学运算)
+6. [Number 数值方法](#二十三-6-number-数值方法)
+7. [Date 日期处理](#二十三-7-date-日期处理)
+8. [JSON 数据转换](#二十三-8-json-数据转换)
+9. [Map 与 Set](#二十三-9-map-与-set)
+10. [Symbol 与 BigInt](#二十三-10-symbol-与-bigint)
+11. [Proxy 与 Reflect](#二十三-11-proxy-与-reflect)
+12. [异步编程 Promise](#二十三-12-异步编程-promise)
+13. [手写代码常用模式](#二十三-13-手写代码常用模式)
+
+---
+
+### 二十三-1、数组方法 (Array)
+
+#### 1.1 遍历方法
+
+##### `forEach()` - 遍历数组
+
+```javascript
+arr.forEach((element, index, array) => {
+    // element: 当前元素
+    // index: 当前索引 (可选)
+    // array: 原数组 (可选)
+}, thisArg); // thisArg: 回调中的 this 指向
+
+// 示例
+[1, 2, 3].forEach((num, i) => console.log(i, num));
+// 0 1
+// 1 2
+// 2 3
+```
+
+**特点**：
+- 无返回值，不改变原数组
+- 无法 break/continue（可用 for...of 或 every/some）
+- 同步执行，不等待异步
+
+---
+
+##### `map()` - 映射数组
+
+```javascript
+const newArr = arr.map((element, index, array) => {
+    return newValue; // 必须返回值
+}, thisArg);
+
+// 示例
+[1, 2, 3].map(x => x * 2); // [2, 4, 3]
+[1, 2, 3].map((x, i) => i + x); // [0, 3, 5]
+
+// 常见面试题：返回对象数组
+const users = [{name: 'a', age: 20}, {name: 'b', age: 30}];
+users.map(u => ({...u, id: Math.random()}));
+```
+
+**特点**：
+- 返回新数组，不改变原数组
+- 返回元素个数与原数组相同
+
+---
+
+##### `filter()` - 过滤数组
+
+```javascript
+const newArr = arr.filter((element, index, array) => {
+    return condition; // 返回 true 保留，false 过滤
+}, thisArg);
+
+// 示例
+[1, 2, 3, 4, 5].filter(x => x > 3); // [4, 5]
+[1, 2, NaN, 3].filter(x => x); // [1, 2, 3]
+['a', '', null, 'b'].filter(Boolean); // ['a', 'b']
+```
+
+---
+
+##### `reduce()` - 归约数组
+
+```javascript
+const result = arr.reduce((accumulator, currentValue, index, array) => {
+    return newAccumulator;
+}, initialValue);
+
+// 参数说明：
+// accumulator: 累计器，初始值为 initialValue 或第一个元素
+// currentValue: 当前元素
+// index: 当前索引 (可选)
+// array: 原数组 (可选)
+
+// 示例：求和
+[1, 2, 3].reduce((sum, n) => sum + n, 0); // 6
+
+// 示例：扁平化
+[[1, 2], [3, 4], [5]].reduce((acc, cur) => [...acc, ...cur], []); // [1,2,3,4,5]
+
+// 示例：统计出现次数
+['a', 'b', 'a', 'c'].reduce((acc, cur) => {
+    acc[cur] = (acc[cur] || 0) + 1;
+    return acc;
+}, {}); // {a: 2, b: 1, c: 1}
+
+// 示例：compose
+const compose = (...fns) => x => fns.reduceRight((v, f) => f(v), x);
+```
+
+---
+
+##### `find()` / `findIndex()` / `findLast()` - 查找元素
+
+```javascript
+// find - 返回第一个满足条件的元素
+arr.find((element, index, array) => condition);
+
+// findIndex - 返回第一个满足条件的索引
+arr.findIndex((element, index, array) => condition);
+
+// findLast - 返回最后一个满足条件的元素 (ES2023)
+arr.findLast((element, index, array) => condition);
+
+// 示例
+[1, 2, 3, 4, 5].find(x => x > 3); // 4
+[1, 2, 3, 4, 5].findIndex(x => x > 3); // 3
+
+// 常见面试题
+const users = [{id: 1, name: 'a'}, {id: 2, name: 'b'}];
+users.find(u => u.id === 2); // {id: 2, name: 'b'}
+```
+
+---
+
+##### `some()` / `every()` - 断言方法
+
+```javascript
+// some - 是否有任意一个满足条件
+arr.some((element, index, array) => condition);
+// 返回 true/false
+
+// every - 是否全部满足条件
+arr.every((element, index, array) => condition);
+// 返回 true/false
+
+// 示例
+[1, 2, 3].some(x => x > 2); // true
+[1, 2, 3].every(x => x > 0); // true
+```
+
+---
+
+#### 1.2 转换方法
+
+##### `flat()` / `flatMap()` - 扁平化
+
+```javascript
+// flat - 扁平化数组
+arr.flat(depth); // depth: 深度，默认为 1，Infinity 为无限
+
+// 示例
+[1, [2, [3, [4]]]].flat(); // [1, 2, [3, [4]]]
+[1, [2, [3, [4]]]].flat(2); // [1, 2, 3, [4]]
+[1, [2, [3, [4]]]].flat(Infinity); // [1, 2, 3, 4]
+
+// flatMap - map + flat
+arr.flatMap((element, index, array) => {
+    return newArray; // 会被扁平化
+});
+
+// 示例
+[1, 2, 3].flatMap(x => [x, x * 2]); // [1, 2, 2, 4, 3, 6]
+['hello world'].flatMap(s => s.split(' ')); // ['hello', 'world']
+```
+
+---
+
+##### `sort()` - 排序
+
+```javascript
+arr.sort((a, b) => comparison);
+// 返回修改后的数组（修改原数组）
+
+// 数值升序
+[3, 1, 2].sort((a, b) => a - b); // [1, 2, 3]
+
+// 数值降序
+[3, 1, 2].sort((a, b) => b - a); // [3, 2, 1]
+
+// 按字符串长度排序
+['abc', 'a', 'abcd'].sort((a, b) => a.length - b.length); // ['a', 'abc', 'abcd']
+
+// 常见面试题：稳定排序
+// V8 使用 TimSort，sort() 是稳定的
+```
+
+---
+
+##### `reverse()` - 反转
+
+```javascript
+arr.reverse();
+// 返回修改后的数组（修改原数组）
+
+// 示例
+[1, 2, 3].reverse(); // [3, 2, 1]
+```
+
+---
+
+#### 1.3 增删改方法
+
+##### `push()` / `pop()` - 末尾操作
+
+```javascript
+arr.push(...elements); // 返回新长度
+arr.pop(); // 返回删除的元素
+// 修改原数组
+
+// 示例
+const arr = [1, 2];
+arr.push(3); // 3
+arr; // [1, 2, 3]
+arr.pop(); // 3
+arr; // [1, 2]
+```
+
+---
+
+##### `unshift()` / `shift()` - 开头操作
+
+```javascript
+arr.unshift(...elements); // 返回新长度
+arr.shift(); // 返回删除的元素
+// 修改原数组
+
+// 示例
+const arr = [1, 2];
+arr.unshift(0); // 3
+arr; // [0, 1, 2]
+arr.shift(); // 0
+arr; // [1, 2]
+```
+
+---
+
+##### `splice()` - 插入/删除/替换
+
+```javascript
+arr.splice(start, deleteCount, ...items);
+// 返回删除元素组成的数组
+// 修改原数组
+
+// 示例
+const arr = [1, 2, 3, 4, 5];
+
+// 删除
+arr.splice(1, 2); // [2, 3]
+arr; // [1, 4, 5]
+
+// 插入
+arr.splice(1, 0, 2, 3); // []
+arr; // [1, 2, 3, 4, 5]
+
+// 替换
+arr.splice(1, 2, 'a', 'b'); // [2, 3]
+arr; // [1, 'a', 'b', 4, 5]
+```
+
+---
+
+##### `fill()` - 填充
+
+```javascript
+arr.fill(value, start, end);
+// 修改原数组
+
+// 示例
+[1, 2, 3].fill(0); // [0, 0, 0]
+[1, 2, 3].fill(0, 1, 2); // [1, 0, 3]
+[1, 2, 3].fill(0, -2, -1); // [1, 0, 3]
+```
+
+---
+
+##### `copyWithin()` - 浅拷贝覆盖
+
+```javascript
+arr.copyWithin(target, start, end);
+// 修改原数组
+
+// 示例
+[1, 2, 3, 4, 5].copyWithin(0, 3); // [4, 5, 3, 4, 5]
+[1, 2, 3, 4, 5].copyWithin(1, 3, 4); // [1, 4, 3, 4, 5]
+```
+
+---
+
+##### `toReversed()` / `toSorted()` / `toSpliced()` (ES2023)
+
+```javascript
+// 不修改原数组的版本
+const newArr = arr.toReversed();
+const newArr = arr.toSorted((a, b) => a - b);
+const newArr = arr.toSpliced(1, 2, 'a', 'b');
+
+// 示例
+const arr = [3, 1, 2];
+arr.toSorted(); // [1, 2, 3]
+arr; // [3, 1, 2] - 原数组不变
+```
+
+---
+
+#### 1.4 查找方法
+
+##### `indexOf()` / `lastIndexOf()` - 查找索引
+
+```javascript
+arr.indexOf(searchElement, fromIndex);
+arr.lastIndexOf(searchElement, fromIndex);
+
+// 示例
+[1, 2, 3, 2, 1].indexOf(2); // 1
+[1, 2, 3, 2, 1].lastIndexOf(2); // 3
+[1, 2, 3].indexOf(4); // -1
+```
+
+---
+
+##### `includes()` - 包含判断
+
+```javascript
+arr.includes(searchElement, fromIndex);
+// 返回 true/false
+
+// 示例
+[1, 2, 3].includes(2); // true
+[1, 2, NaN].includes(NaN); // true (ES2016)
+[1, 2, 3].includes(2, 2); // false
+```
+
+---
+
+#### 1.5 组合方法
+
+##### `concat()` - 合并数组
+
+```javascript
+const newArr = arr.concat(...arrays);
+
+// 示例
+[1, 2].concat([3, 4], [5, 6]); // [1, 2, 3, 4, 5, 6]
+[1, 2].concat(3, [4, 5]); // [1, 2, 3, 4, 5]
+```
+
+---
+
+##### `slice()` - 浅拷贝
+
+```javascript
+const newArr = arr.slice(start, end);
+// 不修改原数组
+
+// 示例
+[1, 2, 3, 4, 5].slice(1, 3); // [2, 3]
+[1, 2, 3, 4, 5].slice(1); // [2, 3, 4, 5]
+[1, 2, 3, 4, 5].slice(-3); // [3, 4, 5]
+[1, 2, 3].slice(); // [1, 2, 3] - 浅拷贝
+```
+
+---
+
+##### `join()` - 转为字符串
+
+```javascript
+const str = arr.join(separator);
+// separator: 分隔符，默认为逗号
+
+// 示例
+[1, 2, 3].join(); // '1,2,3'
+[1, 2, 3].join(''); // '123'
+[1, 2, 3].join('-'); // '1-2-3'
+```
+
+---
+
+##### `at()` - 访问元素 (ES2022)
+
+```javascript
+const element = arr.at(index);
+// 支持负索引
+
+// 示例
+[1, 2, 3].at(0); // 1
+[1, 2, 3].at(-1); // 3
+[1, 2, 3].at(-2); // 2
+```
+
+---
+
+##### `with()` - 返回新数组 (ES2023)
+
+```javascript
+const newArr = arr.with(index, value);
+// 返回新数组，不修改原数组
+
+// 示例
+const arr = [1, 2, 3];
+arr.with(1, 'x'); // [1, 'x', 3]
+// arr 仍是 [1, 2, 3]
+```
+
+---
+
+### 二十三-2、字符串方法 (String)
+
+#### 2.1 访问与查找
+
+##### `charAt()` - 获取字符
+
+```javascript
+const char = str.charAt(index);
+// 返回指定位置的字符，超出范围返回 ''
+
+// 示例
+'hello'.charAt(1); // 'e'
+'hello'.charAt(10); // ''
+```
+
+---
+
+##### `charCodeAt()` - 获取字符码
+
+```javascript
+const code = str.charCodeAt(index);
+// 返回指定位置字符的 Unicode 编码
+
+// 示例
+'a'.charCodeAt(0);  // 97
+'中'.charCodeAt(0); // 20013
+```
+
+---
+
+##### `codePointAt()` - 获取码点 (ES6)
+
+```javascript
+const code = str.codePointAt(index);
+// 处理四字节 UTF-16 字符
+
+// 示例
+'😀'.codePointAt(0); // 128512
+// charCodeAt 无法正确处理
+'😀'.charCodeAt(0);  // 55357 (错误)
+```
+
+---
+
+##### `indexOf()` / `lastIndexOf()`
+
+```javascript
+const index = str.indexOf(searchString, position);
+const index = str.lastIndexOf(searchString, position);
+
+// 示例
+'hello world'.indexOf('o');      // 4
+'hello world'.indexOf('o', 5);   // 7
+'hello world'.lastIndexOf('o');  // 7
+```
+
+---
+
+##### `includes()` - 是否包含 (ES6)
+
+```javascript
+const result = str.includes(searchString, position);
+// 返回 true/false
+
+// 示例
+'hello'.includes('ell');    // true
+'hello'.includes('ell', 1); // true
+'hello'.includes('ell', 2); // false
+```
+
+---
+
+##### `startsWith()` / `endsWith()`
+
+```javascript
+const result = str.startsWith(searchString, position);
+const result = str.endsWith(searchString, position);
+
+// 示例
+'hello'.startsWith('hel');      // true
+'hello'.startsWith('llo', 2);   // true
+'hello'.endsWith('lo');         // true
+```
+
+---
+
+#### 2.2 截取与转换
+
+##### `slice()` - 截取字符串
+
+```javascript
+const newStr = str.slice(start, end);
+// 支持负数
+
+// 示例
+'hello world'.slice(1, 5);   // 'ello'
+'hello world'.slice(1);      // 'ello world'
+'hello world'.slice(-5);     // 'world'
+```
+
+---
+
+##### `substring()` - 截取字符串
+
+```javascript
+const newStr = str.substring(start, end);
+// 不支持负数，自动交换参数
+
+// 示例
+'hello'.substring(1, 4); // 'ell'
+'hello'.substring(4, 1); // 'ell' - 自动交换
+'hello'.substring(-2);   // 'hello' - 负数视为 0
+```
+
+---
+
+##### `substr()` - 截取字符串 (已废弃)
+
+```javascript
+// 不推荐使用，已移出 Web 标准
+const newStr = str.substr(start, length);
+```
+
+---
+
+##### `trim()` - 去除首尾空白
+
+```javascript
+const newStr = str.trim();
+// 去除空格、制表符、换行符等
+
+// 示例
+'  hello  '.trim(); // 'hello'
+```
+
+---
+
+##### `trimStart()` / `trimEnd()` (ES2019)
+
+```javascript
+const newStr = str.trimStart();
+const newStr = str.trimEnd();
+// 或 trimLeft() / trimRight()
+
+// 示例
+'  hello  '.trimStart();  // 'hello  '
+'  hello  '.trimEnd();    // '  hello'
+```
+
+---
+
+#### 2.3 大小写转换
+
+```javascript
+'hello'.toUpperCase(); // 'HELLO'
+'HELLO'.toLowerCase(); // 'hello'
+
+// 特定 locale
+'türkçe'.toLocaleUpperCase('tr-TR'); // 'TÜRKÇE'
+'türkçe'.toLocaleLowerCase('tr-TR'); // 'türkçe'
+```
+
+---
+
+#### 2.4 分割与连接
+
+##### `split()` - 分割字符串
+
+```javascript
+const arr = str.split(separator, limit);
+
+// separator: 分隔符（字符串或正则）
+// limit: 限制返回数组长度
+
+// 示例
+'a,b,c'.split(',');           // ['a', 'b', 'c']
+'hello'.split('');            // ['h','e','l','l','o']
+'hello'.split('', 3);         // ['h', 'e', 'l']
+'a  b  c'.split(/\s+/);       // ['a', 'b', 'c']
+```
+
+---
+
+##### `concat()` - 连接字符串
+
+```javascript
+const newStr = str.concat(str1, str2, ...);
+// 不常用，更推荐使用 + 或模板字符串
+
+// 示例
+'hello'.concat(' ', 'world'); // 'hello world'
+```
+
+---
+
+##### `repeat()` - 重复字符串 (ES6)
+
+```javascript
+const newStr = str.repeat(count);
+
+// 示例
+'hello'.repeat(3); // 'hellohellohello'
+''.padEnd(5); // '     '
+```
+
+---
+
+##### `padStart()` / `padEnd()` - 填充 (ES2017)
+
+```javascript
+const newStr = str.padStart(length, padString);
+const newStr = str.padEnd(length, padString);
+
+// 示例
+'hello'.padStart(10); // '     hello'
+'hello'.padStart(10, '*'); // '*****hello'
+'hello'.padEnd(10); // 'hello     '
+```
+
+---
+
+##### `replace()` / `replaceAll()`
+
+```javascript
+const newStr = str.replace(searchValue, replaceValue);
+// replace: 只替换第一个
+// replaceAll: 替换所有 (ES2021)
+
+// searchValue: 字符串或正则
+// replaceValue: 字符串或函数
+
+// 示例
+'hello world'.replace('o', 'x'); // 'hellx world'
+'hello world'.replaceAll('o', 'x'); // 'hellx wxrld'
+
+// 使用正则
+'hello world'.replace(/o/g, 'x'); // 'hellx wxrld'
+
+// 使用函数
+'hello'.replace(/l/g, (match) => match.toUpperCase()); // 'heLLo'
+```
+
+---
+
+##### `match()` / `matchAll()`
+
+```javascript
+const result = str.match(regexp);
+// 返回数组或 null
+
+// 示例
+'hello world'.match(/\w+/g); // ['hello', 'world']
+'hello'.match(/x/); // null
+
+// matchAll 返回迭代器
+const matches = 'hello'.matchAll(/l/g);
+[...matches]; // [['l', index: 2], ['l', index: 3]]
+```
+
+---
+
+##### `search()` - 搜索
+
+```javascript
+const index = str.search(regexp);
+// 返回第一个匹配的索引，未找到返回 -1
+
+// 示例
+'hello world'.search(/world/); // 6
+'hello'.search(/x/); // -1
+```
+
+---
+
+### 二十三-3、对象方法 (Object)
+
+#### 3.1 创建与属性
+
+##### `Object.create()` - 创建对象
+
+```javascript
+const obj = Object.create(proto);
+// 创建以 proto 为原型的对象
+
+// 示例
+const parent = {x: 1};
+const child = Object.create(parent);
+child.x; // 1
+
+// 创建纯净对象（无原型）
+const obj = Object.create(null);
+```
+
+---
+
+##### `Object.assign()` - 合并对象
+
+```javascript
+const target = Object.assign(target, source1, source2, ...);
+// 返回目标对象
+
+// 示例
+Object.assign({}, {a: 1}, {b: 2}); // {a: 1, b: 2}
+
+// 浅拷贝
+const clone = Object.assign({}, obj);
+
+// 合并相同属性（后面的覆盖前面的）
+Object.assign({a: 1}, {a: 2, b: 3}); // {a: 2, b: 3}
+
+// 常见面试题：合并数组（数组索引作为属性）
+Object.assign([], [1, 2, 3]); // {0: 1, 1: 2, 2: 3, length: 3}
+```
+
+---
+
+##### 扩展运算符 (ES6)
+
+```javascript
+const obj1 = {a: 1};
+const obj2 = {...obj1, b: 2}; // {a: 1, b: 2}
+
+// 合并对象
+const merged = {...obj1, ...obj2};
+
+// 浅拷贝
+const clone = {...obj};
+
+// 常见面试题：深拷贝（基础版）
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
+// 或使用 structuredClone (现代浏览器)
+const clone = structuredClone(obj);
+```
+
+---
+
+#### 3.2 属性操作
+
+##### `Object.keys()` - 获取键数组
+
+```javascript
+const keys = Object.keys(obj);
+// 返回自身可枚举属性（不含继承）
+
+// 示例
+Object.keys({a: 1, b: 2}); // ['a', 'b']
+Object.keys([1, 2, 3]); // ['0', '1', '2']
+Object.keys('hello'); // ['0', '1', '2', '3', '4']
+```
+
+---
+
+##### `Object.values()` - 获取值数组 (ES2017)
+
+```javascript
+const values = Object.values(obj);
+
+// 示例
+Object.values({a: 1, b: 2}); // [1, 2]
+Object.values([1, 2, 3]); // [1, 2, 3]
+```
+
+---
+
+##### `Object.entries()` - 获取键值对数组 (ES2017)
+
+```javascript
+const entries = Object.entries(obj);
+
+// 示例
+Object.entries({a: 1, b: 2}); // [['a', 1], ['b', 2]]
+Object.entries([1, 2, 3]); // [['0', 1], ['1', 2], ['2', 3]]
+
+// 常见用法：对象转 Map
+new Map(Object.entries({a: 1, b: 2}));
+
+// 常见用法：对象遍历
+for (const [key, value] of Object.entries(obj)) {
+    console.log(key, value);
+}
+```
+
+---
+
+##### `Object.fromEntries()` - 键值对转对象 (ES2019)
+
+```javascript
+const obj = Object.fromEntries(entries);
+// entries: 可迭代的键值对
+
+// 示例
+Object.fromEntries([['a', 1], ['b', 2]]); // {a: 1, b: 2}
+
+// 常见用法：Map 转对象
+new Map([['a', 1], ['b', 2]]);
+Object.fromEntries(map.entries()); // {a: 1, b: 2}
+
+// 常见用法：URL 参数转对象
+const params = new URLSearchParams('a=1&b=2');
+Object.fromEntries(params); // {a: '1', b: '2'}
+
+// 常见用法：对象反转
+const obj = {a: 1, b: 2};
+const inverted = Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [v, k])
+); // {1: 'a', 2: 'b'}
+```
+
+---
+
+##### `Object.hasOwn()` - 判断自身属性 (ES2022)
+
+```javascript
+const result = Object.hasOwn(obj, prop);
+// 返回 true/false，不检查原型链
+
+// 示例
+const obj = {a: 1};
+Object.hasOwn(obj, 'a');   // true
+Object.hasOwn(obj, 'toString'); // false
+// 等同于 Object.prototype.hasOwnProperty.call()
+```
+
+---
+
+##### `Object.hasOwnProperty()` - 判断自身属性
+
+```javascript
+const result = obj.hasOwnProperty(prop);
+
+// 示例
+({a: 1}).hasOwnProperty('a'); // true
+({a: 1}).hasOwnProperty('toString'); // false
+```
+
+---
+
+##### `Object.getOwnPropertyNames()` - 获取所有属性名
+
+```javascript
+const names = Object.getOwnPropertyNames(obj);
+// 包括不可枚举属性
+
+// 示例
+Object.getOwnPropertyNames([1, 2, 3]); // ['0', '1', '2', 'length']
+```
+
+---
+
+##### `Object.getOwnPropertySymbols()` - 获取 Symbol 属性
+
+```javascript
+const symbols = Object.getOwnPropertySymbols(obj);
+
+// 示例
+const sym = Symbol('a');
+const obj = {[sym]: 1};
+Object.getOwnPropertySymbols(obj); // [Symbol(a)]
+```
+
+---
+
+#### 3.3 原型操作
+
+##### `Object.getPrototypeOf()` - 获取原型
+
+```javascript
+const proto = Object.getPrototypeOf(obj);
+
+// 示例
+Object.getPrototypeOf({}); // Object.prototype
+Object.getPrototypeOf([]); // Array.prototype
+```
+
+---
+
+##### `Object.setPrototypeOf()` - 设置原型
+
+```javascript
+Object.setPrototypeOf(obj, proto);
+// 性能较差，建议使用 Object.create()
+
+// 示例
+const parent = {x: 1};
+const child = {};
+Object.setPrototypeOf(child, parent);
+child.x; // 1
+```
+
+---
+
+#### 3.4 属性描述符
+
+##### `Object.defineProperty()` - 定义属性
+
+```javascript
+Object.defineProperty(obj, prop, descriptor);
+
+// descriptor
+{
+    value: 'Tom',
+    writable: false,      // 可写
+    enumerable: true,     // 可枚举
+    configurable: false  // 可配置
+}
+
+// 或使用存取描述符
+{
+    get() { return this._name; },
+    set(val) { this._name = val; },
+    enumerable: true,
+    configurable: true
+}
+
+// 示例
+const obj = {};
+Object.defineProperty(obj, 'name', {
+    value: 'Tom',
+    writable: false,
+    enumerable: true,
+    configurable: false
+});
+obj.name; // 'Tom'
+obj.name = 'Jerry'; // 严格模式下报错
+obj.name; // 'Tom'
+```
+
+---
+
+##### `Object.getOwnPropertyDescriptor()` - 获取属性描述
+
+```javascript
+const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+
+// 示例
+Object.getOwnPropertyDescriptor({a: 1}, 'a');
+// {value: 1, writable: true, enumerable: true, configurable: true}
+```
+
+---
+
+#### 3.5 对象保护
+
+##### 冻结 / 密封 / 扩展性
+
+```javascript
+// Object.freeze() - 不可修改/删除/添加
+const frozen = Object.freeze({a: 1});
+frozen.a = 2; // 静默失败
+frozen.b = 3; // 静默失败
+delete frozen.a; // 静默失败
+
+// Object.seal() - 不可删除/添加（可修改）
+const sealed = Object.seal({a: 1});
+sealed.a = 2; // OK
+delete sealed.a; // 静默失败
+
+// Object.preventExtensions() - 不可添加
+const ext = Object.preventExtensions({a: 1});
+ext.b = 2; // 静默失败
+
+// 检查状态
+Object.isFrozen(obj);
+Object.isSealed(obj);
+Object.isExtensible(obj);
+```
+
+---
+
+### 二十三-4、ES6+ 新增语法
+
+#### 4.1 解构赋值
+
+```javascript
+// 数组解构
+const [a, b, c] = [1, 2, 3]; // a=1, b=2, c=3
+const [a, , c] = [1, 2, 3]; // a=1, c=3
+const [a, ...rest] = [1, 2, 3]; // a=1, rest=[2, 3]
+const [a, b = 10] = [1]; // a=1, b=10
+
+// 对象解构
+const {name, age} = {name: 'Tom', age: 18};
+const {name: n, age: a} = {name: 'Tom', age: 18}; // n='Tom', a=18
+const {name, age = 18} = {name: 'Tom'}; // age=18
+
+// 函数参数解构
+function fn({x, y}) { return x + y; }
+fn({x: 1, y: 2}); // 3
+
+// 交换变量
+[a, b] = [b, a];
+```
+
+---
+
+#### 4.2 模板字符串
+
+```javascript
+const name = 'Tom';
+const age = 18;
+
+// 嵌入变量
+`My name is ${name}, I'm ${age} years old`;
+
+// 多行
+`line1
+line2
+line3`;
+
+// 标签函数
+function tag(strings, ...values) {
+    return strings[0] + values.join('|') + strings[1];
+}
+tag`Hello ${name}!`; // 'Hello Tom!'
+```
+
+---
+
+#### 4.3 箭头函数
+
+```javascript
+const add = (a, b) => a + b;
+const getObj = () => ({x: 1});
+const arr = [1, 2, 3].map(x => x * 2);
+
+// 特点：
+// 1. 没有自己的 this
+// 2. 没有 arguments
+// 3. 不能用作构造函数
+// 4. 没有 prototype
+```
+
+---
+
+#### 4.4 剩余参数与展开运算符
+
+```javascript
+// 剩余参数
+function fn(a, ...rest) {
+    console.log(a, rest);
+}
+fn(1, 2, 3); // 1, [2, 3]
+
+// 展开运算符
+const arr = [1, 2, 3];
+[...arr]; // [1, 2, 3]
+[0, ...arr, 4]; // [0, 1, 2, 3, 4]
+
+const obj = {a: 1};
+{...obj, b: 2}; // {a: 1, b: 2}
+
+// 浅拷贝
+[...arr]; // 数组
+{...obj}; // 对象
+```
+
+---
+
+#### 4.5 可选链与空值合并
+
+```javascript
+// 可选链 (ES2020)
+obj?.prop;
+arr?.[0];
+fn?.();
+
+// 空值合并 (ES2020)
+const value = a ?? b;
+// a 为 null 或 undefined 时使用 b
+
+// 逻辑空赋值 (ES2021)
+a ??= b;
+```
+
+---
+
+#### 4.6 BigInt
+
+```javascript
+// 创建
+const big = 123n;
+const big = BigInt(123);
+
+// 运算
+1n + 2n;
+2n ** 10n;
+7n / 2n;
+
+// 比较
+1n === 1;
+1n == 1;
+```
+
+---
+
+#### 4.7 动态导入
+
+```javascript
+const module = await import('./module.js');
+```
+
+---
+
+### 二十三-5、Math 数学运算
+
+```javascript
+// 取整
+Math.floor(3.7);  // 3 - 向下取整
+Math.ceil(3.2);   // 4 - 向上取整
+Math.round(3.5);  // 4 - 四舍五入
+Math.trunc(3.7); // 3 - 截断整数部分
+
+// 最大最小值
+Math.max(1, 2, 3);           // 3
+Math.min(1, 2, 3);           // 1
+Math.max(...arr);            // 数组取最大值
+Math.min(...arr);            // 数组取最小值
+
+// 幂与根
+Math.pow(2, 3);    // 8 - 2^3
+Math.sqrt(16);     // 4 - 平方根
+Math.cbrt(8);      // 2 - 立方根
+2 ** 3;            // 8 - ES6 幂运算符
+
+// 对数
+Math.log(e);       // 1
+Math.log10(100);   // 2
+Math.log2(8);      // 3
+
+// 随机数
+Math.random();      // [0, 1) 随机小数
+
+// 生成 [min, max) 随机整数
+Math.floor(Math.random() * (max - min)) + min;
+// 生成 [min, max] 随机整数
+Math.floor(Math.random() * (max - min + 1)) + min;
+
+// 绝对值
+Math.abs(-5);      // 5
+
+// 三角函数
+Math.sin(x);
+Math.cos(x);
+Math.tan(x);
+Math.asin(x);
+Math.acos(x);
+Math.atan(x);
+Math.atan2(y, x);  // 返回 y/x 的反正切
+
+// 常量
+Math.PI;           // π
+Math.E;            // e
+```
+
+---
+
+### 二十三-6、Number 数值方法
+
+```javascript
+// 转换为数值
+Number('123');     // 123
+Number('12.3');    // 12.3
+Number('12a');     // NaN
+Number(true);      // 1
+Number(false);     // 0
+Number(null);      // 0
+Number(undefined);  // NaN
+
+// parseInt / parseFloat
+parseInt('123');      // 123
+parseInt('123.45');   // 123
+parseInt('10', 2);    // 2 - 二进制
+parseInt('ff', 16);   // 255 - 十六进制
+
+parseFloat('123.45'); // 123.45
+parseFloat('12.34.56'); // 12.34
+
+// 检查是否为有限数
+isFinite(123);     // true
+isFinite(Infinity); // false
+
+// 检查是否为 NaN
+isNaN(NaN);        // true
+isNaN('a');        // true (会转换)
+Number.isNaN('a'); // false (不转换)
+
+// 检查是否为整数
+Number.isInteger(123);   // true
+Number.isInteger(123.0);  // true
+Number.isInteger(123.5);  // false
+
+// 安全整数
+Number.isSafeInteger(2**53 - 1); // true
+Number.isSafeInteger(2**53);     // false
+Number.MAX_SAFE_INTEGER;
+Number.MIN_SAFE_INTEGER;
+
+// EPSILON - 浮点精度
+Number.EPSILON; // 2^-52，用于浮点比较
+
+// 判断两个浮点数相等
+function isEqual(a, b) {
+    return Math.abs(a - b) < Number.EPSILON;
+}
+
+// 进制转换
+(255).toString(16); // 'ff'
+(255).toString(2);  // '11111111'
+```
+
+---
+
+### 二十三-7、Date 日期处理
+
+#### 创建日期
+
+```javascript
+new Date();                    // 当前时间
+new Date(ms);                  // 毫秒时间戳
+new Date(dateString);          // 解析字符串
+new Date(year, month, day, hour, minute, second, ms);
+
+// 示例
+new Date(2024, 0, 1);         // 2024-01-01 (月份从 0 开始)
+new Date('2024-01-01');       // ISO 格式
+new Date('2024/01/01');       // 本地格式
+new Date(1704067200000);     // 毫秒时间戳
+```
+
+#### 获取方法
+
+```javascript
+const date = new Date();
+
+date.getFullYear();     // 年 (2024)
+date.getMonth();        // 月 (0-11)
+date.getDate();         // 日 (1-31)
+date.getDay();          // 星期 (0-6)
+date.getHours();        // 时 (0-23)
+date.getMinutes();      // 分 (0-59)
+date.getSeconds();      // 秒 (0-59)
+date.getMilliseconds(); // 毫秒 (0-999)
+
+date.getTime();         // 毫秒时间戳
+date.valueOf();         // 毫秒时间戳 (同 getTime)
+
+// UTC 版本
+date.getUTCFullYear();
+date.getUTCMonth();
+// ... 其他 UTC 方法
+
+// 时区偏移 (分钟)
+date.getTimezoneOffset(); // -480 (UTC+8)
+```
+
+#### 设置方法
+
+```javascript
+const date = new Date();
+
+date.setFullYear(2024);
+date.setMonth(0);      // 1月
+date.setDate(15);
+date.setHours(12, 30, 0, 0); // 时分秒毫秒
+date.setMinutes(30);
+date.setSeconds(0);
+date.setMilliseconds(0);
+date.setTime(1704067200000);
+```
+
+#### 格式化方法
+
+```javascript
+const date = new Date();
+
+date.toString();         // 'Thu Jan 01 2024 00:00:00 GMT+0800'
+date.toDateString();     // 'Thu Jan 01 2024'
+date.toTimeString();     // '00:00:00 GMT+0800'
+
+date.toISOString();      // '2024-01-01T00:00:00.000Z'
+date.toUTCString();      // 'Sun, 31 Dec 2023 16:00:00 GMT'
+
+date.toLocaleString();         // 本地格式
+date.toLocaleString('zh-CN');  // 中文格式
+date.toLocaleDateString();     // 本地日期
+date.toLocaleTimeString();     // 本地时间
+```
+
+#### 时间戳
+
+```javascript
+// 获取时间戳
+Date.now();              // 当前时间戳
+new Date().getTime();
++new Date();             // 隐式转换
+
+// 时间戳转日期
+new Date(timestamp);
+
+// 日期转时间戳
+new Date('2024-01-01').getTime();
+new Date('2024-01-01').valueOf();
++new Date('2024-01-01');
+```
+
+---
+
+### 二十三-8、JSON 数据转换
+
+```javascript
+// 序列化
+JSON.stringify(value, replacer, space);
+// value: 要转换的值
+// replacer: 函数或数组（可选）
+// space: 缩进空格数或字符串
+
+// 基本使用
+JSON.stringify({a: 1});           // '{"a":1}'
+JSON.stringify([1, 2, 3]);        // '[1,2,3]'
+JSON.stringify({a: 1}, null, 2);  // 格式化输出
+
+// toJSON 方法
+const obj = {
+    a: 1,
+    toJSON() { return {a: this.a}; }
+};
+JSON.stringify(obj); // '{"a":1}'
+
+// 注意事项
+JSON.stringify({a: undefined});    // '{}' - undefined 被忽略
+JSON.stringify({a: function(){}});// '{}' - 函数被忽略
+JSON.stringify({a: Symbol('s')}); // '{}' - Symbol 被忽略
+JSON.stringify([undefined]);     // '[null]' - 数组中转为 null
+JSON.stringify({a: NaN});         // '{"a":null}'
+JSON.stringify({a: Infinity});   // '{"a":null}'
+JSON.stringify({a: /regex/});     // '{}'
+
+// 解析
+JSON.parse(str, reviver);
+// reviver: 可选的转换函数
+
+JSON.parse('{"a":1}');     // {a: 1}
+JSON.parse('{"a":1}', (k, v) => {
+    if (k === 'a') return v * 2;
+    return v;
+}); // {a: 2}
+```
+
+---
+
+### 二十三-9、Map 与 Set
+
+#### Map 完整 API
+
+```javascript
+const map = new Map();
+
+// 基础操作
+map.set(key, value);
+map.get(key);
+map.has(key);
+map.delete(key);
+map.clear();
+map.size;
+
+// 遍历
+map.forEach((value, key, map) => { ... });
+for (const [key, value] of map.entries()) { ... }
+for (const key of map.keys()) { ... }
+for (const value of map.values()) { ... }
+
+// 迭代器
+map[Symbol.iterator] === map.entries;
+
+// 常见用法：按插入顺序遍历
+const map = new Map();
+map.set('one', 1);
+map.set('two', 2);
+[...map]; // [['one',1], ['two',2]]
+```
+
+#### Set 完整 API
+
+```javascript
+const set = new Set();
+
+// 基础操作
+set.add(value);
+set.has(value);
+set.delete(value);
+set.clear();
+set.size;
+
+// 遍历
+set.forEach((value, value2, set) => { ... });
+for (const value of set) { ... };
+[...set]; // 数组
+
+// 集合运算
+const setA = new Set([1, 2, 3]);
+const setB = new Set([2, 3, 4]);
+
+// 并集
+new Set([...setA, ...setB]); // {1,2,3,4}
+
+// 交集
+[...setA].filter(x => setB.has(x)); // {2,3}
+
+// 差集 (A - B)
+[...setA].filter(x => !setB.has(x)); // {1}
+
+// 对称差集
+[...setA].filter(x => !setB.has(x)),
+...[...setB].filter(x => !setA.has(x)); // {1,4}
+```
+
+---
+
+### 二十三-10、Symbol 与 BigInt
+
+#### Symbol 完整用法
+
+```javascript
+// 基本
+const s = Symbol('desc');
+const s2 = Symbol.for('key'); // 注册表
+Symbol.keyFor(s2); // 'key'
+
+// 常用内置 Symbol
+Symbol.iterator;    // 可迭代
+Symbol.toStringTag;
+
+// 自定义迭代器
+const obj = {
+    [Symbol.iterator]() {
+        let i = 0;
+        return {
+            next() {
+                if (i < 3) return {value: i++, done: false};
+                return {done: true};
+            }
+        };
+    }
+};
+[...obj]; // [0, 1, 2]
+
+// Symbol 不可枚举
+Object.keys(obj); // []
+Object.getOwnPropertySymbols(obj); // [Symbol]
+```
+
+#### BigInt
+
+```javascript
+// 创建
+const big = 123n;
+const big = BigInt(123);
+
+// 运算
+1n + 2n;
+2n ** 10n;
+7n / 2n;
+
+// 比较
+1n === 1;
+1n == 1;
+```
+
+---
+
+### 二十三-11、Proxy 与 Reflect
+
+#### Proxy
+
+```javascript
+const proxy = new Proxy(target, handler);
+
+// handler 方法
+{
+    get(target, prop, receiver) { ... },
+    set(target, prop, value, receiver) { ... },
+    has(target, prop) { ... },
+    deleteProperty(target, prop) { ... },
+    apply(target, thisArg, args) { ... },
+    construct(target, args) { ... },
+    getOwnPropertyDescriptor(target, prop) { ... },
+    defineProperty(target, prop, descriptor) { ... },
+    getPrototypeOf(target) { ... },
+    setPrototypeOf(target, proto) { ... },
+    preventExtensions(target) { ... },
+    isExtensible(target) { ... }
+}
+
+// 示例：数据响应式
+function reactive(obj) {
+    return new Proxy(obj, {
+        get(target, prop) {
+            console.log(`读取 ${prop}`);
+            return target[prop];
+        },
+        set(target, prop, value) {
+            console.log(`设置 ${prop} = ${value}`);
+            target[prop] = value;
+        }
+    });
+}
+
+// 示例：验证
+function validate(obj) {
+    return new Proxy(obj, {
+        set(target, prop, value) {
+            if (prop === 'age' && (value < 0 || value > 150)) {
+                throw new Error('年龄无效');
+            }
+            target[prop] = value;
+            return true;
+        }
+    });
+}
+```
+
+#### Reflect
+
+```javascript
+// 替代 Object 的静态方法
+Reflect.get(target, prop, receiver);
+Reflect.set(target, prop, value, receiver);
+Reflect.has(target, prop);
+Reflect.deleteProperty(target, prop);
+Reflect.apply(fn, thisArg, args);
+Reflect.construct(constructor, args);
+
+// 与 Proxy 配合
+function reactive(obj) {
+    return new Proxy(obj, {
+        get(target, prop) {
+            return Reflect.get(target, prop);
+        },
+        set(target, prop, value) {
+            return Reflect.set(target, prop, value);
+        }
+    });
+}
+
+// 常见用法：函数调用
+Reflect.apply(Math.floor, undefined, [1.5]); // 1
+Reflect.apply(String.fromCharCode, undefined, [104, 105]); // 'hi'
+
+// 常见用法：构造函数
+Reflect.construct(Array, [3]); // 等同于 new Array(3)
+```
+
+---
+
+### 二十三-12、异步编程 Promise
+
+#### Promise 基础
+
+```javascript
+// 创建 Promise
+const promise = new Promise((resolve, reject) => {
+    // 异步操作
+    if (success) {
+        resolve(value);
+    } else {
+        reject(error);
+    }
+});
+
+// 使用
+promise
+    .then(value => { ... })
+    .catch(error => { ... })
+    .finally(() => { ... });
+
+// Promise 状态
+// pending -> fulfilled 或 rejected
+// 一旦确定，不可改变
+```
+
+#### Promise 静态方法
+
+```javascript
+// Promise.resolve() - 创建已决议的 Promise
+Promise.resolve(value);
+Promise.resolve(promise);
+Promise.resolve(() => {});
+
+// Promise.reject() - 创建已拒绝的 Promise
+Promise.reject(error);
+
+// Promise.all() - 所有 Promise 都 resolved
+Promise.all([p1, p2, p3])
+    .then(([v1, v2, v3]) => { ... });
+
+// Promise.allSettled() - 所有 Promise 都 settled (ES2020)
+Promise.allSettled([p1, p2, p3])
+    .then(results => {
+        results.forEach(r => {
+            if (r.status === 'fulfilled') r.value;
+            else r.reason;
+        });
+    });
+
+// Promise.race() - 第一个 settled 的结果
+Promise.race([p1, p2, p3])
+    .then(value => { ... });
+
+// Promise.any() - 第一个 resolved (ES2021)
+Promise.any([p1, p2, p3])
+    .then(value => { ... })
+    .catch(errors => { ... });
+```
+
+#### async/await
+
+```javascript
+// async 函数
+async function fn() {
+    return 'hello';
+}
+// 等同于
+function fn() {
+    return Promise.resolve('hello');
+}
+
+// await
+async function fn() {
+    const result = await promise;
+    return result;
+}
+
+// 错误处理
+async function fn() {
+    try {
+        const result = await promise;
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// 并行执行
+async function fn() {
+    const [r1, r2] = await Promise.all([p1, p2]);
+    return [r1, r2];
+}
+
+// 常见面试题
+async function serial() {
+    for (const item of items) {
+        await processItem(item);
+    }
+}
+
+async function parallel() {
+    await Promise.all(items.map(item => processItem(item)));
+}
+```
+
+---
+
+### 二十三-13、手写代码常用模式
+
+#### 1. 深拷贝
+
+```javascript
+// 基础版（无法处理函数、正则等）
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(item => deepClone(item));
+    return Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => [k, deepClone(v)])
+    );
+}
+
+// 完整版
+function deepClone(obj, hash = new WeakMap()) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj instanceof Date) return new Date(obj);
+    if (obj instanceof RegExp) return new RegExp(obj.source, obj.flags);
+    if (obj instanceof Map) {
+        const clone = new Map();
+        obj.forEach((v, k) => clone.set(k, deepClone(v, hash)));
+        return clone;
+    }
+    if (obj instanceof Set) {
+        const clone = new Set();
+        obj.forEach(v => clone.add(deepClone(v, hash)));
+        return clone;
+    }
+
+    if (hash.has(obj)) return hash.get(obj);
+    const clone = Object.create(obj.constructor.prototype);
+    hash.set(obj, clone);
+
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            clone[key] = deepClone(obj[key], hash);
+        }
+    }
+    return clone;
+}
+
+// 现代浏览器/Node
+const clone = structuredClone(obj);
+```
+
+#### 2. 防抖 (Debounce)
+
+```javascript
+function debounce(fn, delay, immediate = false) {
+    let timer = null;
+    return function(...args) {
+        const context = this;
+
+        if (timer) clearTimeout(timer);
+
+        if (immediate && !timer) {
+            fn.apply(context, args);
+        }
+
+        timer = setTimeout(() => {
+            if (!immediate) {
+                fn.apply(context, args);
+            }
+            timer = null;
+        }, delay);
+    };
+}
+
+// 使用
+window.addEventListener('resize', debounce(handleResize, 300));
+```
+
+#### 3. 节流 (Throttle)
+
+```javascript
+function throttle(fn, delay) {
+    let last = 0;
+    return function(...args) {
+        const now = Date.now();
+        if (now - last >= delay) {
+            last = now;
+            fn.apply(this, args);
+        }
+    };
+}
+
+// 或使用时间戳 + 定时器（确保最后一次执行）
+function throttle(fn, delay) {
+    let last = 0, timer = null;
+    return function(...args) {
+        const now = Date.now();
+        const remaining = delay - (now - last);
+
+        if (remaining <= 0) {
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            last = now;
+            fn.apply(this, args);
+        } else if (!timer) {
+            timer = setTimeout(() => {
+                last = Date.now();
+                timer = null;
+                fn.apply(this, args);
+            }, remaining);
+        }
+    };
+}
+```
+
+#### 4. 科里化 (Curry)
+
+```javascript
+function curry(fn) {
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn.apply(this, args);
+        }
+        return function(...args2) {
+            return curried.apply(this, [...args, ...args2]);
+        };
+    };
+}
+
+// 示例
+const add = (a, b, c) => a + b + c;
+const curriedAdd = curry(add);
+curriedAdd(1)(2)(3);   // 6
+curriedAdd(1, 2)(3);   // 6
+curriedAdd(1)(2, 3);   // 6
+```
+
+#### 5. 偏函数 (Partial)
+
+```javascript
+function partial(fn, ...args) {
+    return function(...args2) {
+        return fn(...args, ...args2);
+    };
+}
+
+// 示例
+const add = (a, b, c) => a + b + c;
+const add5 = partial(add, 5);
+add5(1, 2); // 8
+```
+
+#### 6. 数组去重
+
+```javascript
+// 方法1: Set
+[...new Set(arr)];
+
+// 方法2: filter + indexOf
+arr.filter((v, i) => arr.indexOf(v) === i);
+
+// 方法3: reduce
+arr.reduce((acc, v) => acc.includes(v) ? acc : [...acc, v], []);
+
+// 方法4: Map (保持插入顺序)
+[...arr.reduce((map, v) => map.set(v, v), new Map()).values()];
+
+// 复杂类型去重
+const unique = (arr, key) => {
+    const seen = new Set();
+    return arr.filter(item => {
+        const k = key(item);
+        return seen.has(k) ? false : seen.add(k);
+    });
+};
+```
+
+#### 7. 数组扁平化
+
+```javascript
+// 方法1: flat
+arr.flat(Infinity);
+
+// 方法2: reduce + concat
+function flatten(arr) {
+    return arr.reduce((acc, v) =>
+        Array.isArray(v) ? [...acc, ...flatten(v)] : [...acc, v],
+        []
+    );
+}
+
+// 方法3: while + some
+function flatten(arr) {
+    while (arr.some(Array.isArray)) {
+        arr = [].concat(...arr);
+    }
+    return arr;
+}
+```
+
+#### 8. 合并有序数组
+
+```javascript
+function mergeSortedArrays(arr1, arr2) {
+    const result = [];
+    let i = 0, j = 0;
+
+    while (i < arr1.length && j < arr2.length) {
+        if (arr1[i] <= arr2[j]) {
+            result.push(arr1[i++]);
+        } else {
+            result.push(arr2[j++]);
+        }
+    }
+
+    return [...result, ...arr1.slice(i), ...arr2.slice(j)];
+}
+```
+
+#### 9. LRU 缓存
+
+```javascript
+class LRUCache {
+    constructor(capacity) {
+        this.capacity = capacity;
+        this.cache = new Map();
+    }
+
+    get(key) {
+        if (!this.cache.has(key)) return -1;
+        const value = this.cache.get(key);
+        this.cache.delete(key);
+        this.cache.set(key, value);
+        return value;
+    }
+
+    put(key, value) {
+        if (this.cache.has(key)) {
+            this.cache.delete(key);
+        } else if (this.cache.size >= this.capacity) {
+            const firstKey = this.cache.keys().next().value;
+            this.cache.delete(firstKey);
+        }
+        this.cache.set(key, value);
+    }
+}
+```
+
+#### 10. 快速排序
+
+```javascript
+function quickSort(arr) {
+    if (arr.length <= 1) return arr;
+
+    const pivot = arr[arr.length - 1];
+    const left = [];
+    const right = [];
+
+    for (let i = 0; i < arr.length - 1; i++) {
+        if (arr[i] < pivot) {
+            left.push(arr[i]);
+        } else {
+            right.push(arr[i]);
+        }
+    }
+
+    return [...quickSort(left), pivot, ...quickSort(right)];
+}
+
+// 原地快排
+function quickSortInPlace(arr, left = 0, right = arr.length - 1) {
+    if (left >= right) return;
+
+    const pivotIndex = partition(arr, left, right);
+    quickSortInPlace(arr, left, pivotIndex - 1);
+    quickSortInPlace(arr, pivotIndex + 1, right);
+
+    return arr;
+}
+
+function partition(arr, left, right) {
+    const pivot = arr[right];
+    let i = left - 1;
+
+    for (let j = left; j < right; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    }
+
+    [arr[i + 1], arr[right]] = [arr[right], arr[i + 1]];
+    return i + 1;
+}
+```
+
+#### 11. 归并排序
+
+```javascript
+function mergeSort(arr) {
+    if (arr.length <= 1) return arr;
+
+    const mid = Math.floor(arr.length / 2);
+    const left = mergeSort(arr.slice(0, mid));
+    const right = mergeSort(arr.slice(mid));
+
+    return merge(left, right);
+}
+
+function merge(left, right) {
+    const result = [];
+    let i = 0, j = 0;
+
+    while (i < left.length && j < right.length) {
+        if (left[i] <= right[j]) {
+            result.push(left[i++]);
+        } else {
+            result.push(right[j++]);
+        }
+    }
+
+    return [...result, ...left.slice(i), ...right.slice(j)];
+}
+```
+
+#### 12. 二分查找
+
+```javascript
+// 查找目标值
+function binarySearch(arr, target) {
+    let left = 0, right = arr.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] === target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+
+    return -1;
+}
+
+// 查找左边界
+function leftBound(arr, target) {
+    let left = 0, right = arr.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+
+    return left;
+}
+
+// 查找右边界
+function rightBound(arr, target) {
+    let left = 0, right = arr.length - 1;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] <= target) left = mid + 1;
+        else right = mid - 1;
+    }
+
+    return right;
+}
+```
+
+#### 13. 斐波那契数列
+
+```javascript
+// 递归（效率低）
+function fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+// 记忆化
+function fibMemo(n, memo = {}) {
+    if (n in memo) return memo[n];
+    if (n <= 1) return n;
+    memo[n] = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
+    return memo[n];
+}
+
+// 迭代
+function fibIter(n) {
+    if (n <= 1) return n;
+    let a = 0, b = 1;
+    for (let i = 2; i <= n; i++) {
+        [a, b] = [b, a + b];
+    }
+    return b;
+}
+```
+
+#### 14. 洗牌算法 (Fisher-Yates)
+
+```javascript
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+```
+
+#### 15. 顺序执行异步任务
+
+```javascript
+async function sequential(tasks) {
+    const results = [];
+    for (const task of tasks) {
+        results.push(await task());
+    }
+    return results;
+}
+```
+
+#### 16. 并发限制
+
+```javascript
+async function concurrencyLimit(tasks, limit) {
+    const results = [];
+    const executing = [];
+
+    for (const task of tasks) {
+        const p = task().then(result => {
+            results.push(result);
+            executing.splice(executing.indexOf(p), 1);
+        });
+
+        executing.push(p);
+
+        if (executing.length >= limit) {
+            await Promise.race(executing);
+        }
+    }
+
+    return Promise.all(executing).then(() => results);
+}
+```
+
+#### 17. 模拟 API 请求（带重试）
+
+```javascript
+async function fetchWithRetry(fn, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn();
+        } catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        }
+    }
+}
+```
