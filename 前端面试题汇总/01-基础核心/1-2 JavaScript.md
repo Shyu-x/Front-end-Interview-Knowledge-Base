@@ -59,7 +59,7 @@ new Promise((resolve) => {
   console.log(4);  // 微任务
 });
 
-console.log(：1,5);
+console.log(1,5);
 // 输出顺序 3, 5, 4, 2
 ```
 
